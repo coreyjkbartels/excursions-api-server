@@ -1,6 +1,10 @@
+require('./db/mongoose');
+
 const express = require('express');
 const cors = require('cors');
+
 const userRouter = require('./routers/user');
+
 
 const app = express();
 app.use(express.json());
@@ -14,8 +18,8 @@ app.use(function (req, res, next) {
 
 app.use(userRouter);
 
-const port = process.env.PORT;
 
+const port = process.env.PORT;
 app.listen(port, () => {
     console.log('API service is up on port ' + port);
 });
