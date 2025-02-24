@@ -1,8 +1,14 @@
-# USA National Park Excursions API Documentation
+# USA National Park Excursions
 
 This is a travel planning app based around the United States National Parks.
 
-## User
+## Flow Diagram
+
+[View on Figma](https://www.figma.com/board/0aFhBohj24KeanH30Csd0D/CSCI-430-%E2%80%94-USA-National-Parks-Travel-Planner?node-id=0-1&t=H3pdiFYVjpLQVJQR-1)
+
+## API Protocol
+
+### User
 
 | **Create User** ||
 | --- | --- |
@@ -130,7 +136,7 @@ This is a travel planning app based around the United States National Parks.
 
 
 
-## Bookmarks
+### Bookmarks
 
 | **Create Bookmark(s)** ||
 | --- | --- |
@@ -178,7 +184,7 @@ This is a travel planning app based around the United States National Parks.
 
 
 
-## National Parks
+### National Parks
 
 | **Get National Parks** ||
 | --- | --- |
@@ -199,7 +205,7 @@ This is a travel planning app based around the United States National Parks.
 
 
 
-## Campgrounds
+### Campgrounds
 
 Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/{park-slug}"
 
@@ -220,7 +226,7 @@ Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/
 
 
 
-## Things To Do
+### Things To Do
 
 Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/{park-slug}"
 
@@ -240,7 +246,7 @@ Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/
 
 
 
-## Excursions
+### Excursions
 
 Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/{park-slug}"
 
