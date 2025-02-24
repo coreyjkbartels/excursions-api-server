@@ -106,13 +106,4 @@ router.post("/user/sign-out", auth, async (req, res) => {
     }
 });
 
-// router.get('/user', async (req, res) => {
-
-//     try {
-//         res.status(201).send("Joe User + Some Other Text");
-//     } catch (error) {
-//         res.status(400).send("Error");
-//     }
-// });
-
 module.exports = router;
