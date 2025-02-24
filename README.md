@@ -2,7 +2,7 @@
 
 This is a travel planning app based around the United States National Parks.
 
-## Flow Diagram
+## App Diagram
 
 [View on Figma](https://www.figma.com/board/0aFhBohj24KeanH30Csd0D/CSCI-430-%E2%80%94-USA-National-Parks-Travel-Planner?node-id=0-1&t=H3pdiFYVjpLQVJQR-1)
 
