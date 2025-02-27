@@ -8,6 +8,15 @@ This is a travel planning app based around the United States National Parks.
 
 ## API Protocol
 
+### Table of Contents
+
+1. [Users](#user)
+2. [National Parks](#national-parks)
+3. [Campgrounds](#campgrounds)
+4. [Things To Do](#things-to-do)
+5. [Excursions](#excursions)
+6. [Deprecated Endpoints](#deprecated-api-endpoints)
+
 ### User
 
 | **Create User** ||
@@ -82,106 +91,6 @@ This is a travel planning app based around the United States National Parks.
 || 400 Bad Request |
 || 403 Forbidden |
 || 500 Internal Server Error |
-
-
-| **Verify User Email** ||
-| --- | --- |
-| method | POST |
-| endpoint | /user/verification |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK |
-|| 400 Bad Request |
-|| 500 Internal Server Error |
-
-
-| **Resend Verification Email** ||
-| --- | --- |
-| method | GET |
-| endpoint | /user/verification |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 500 Internal Server Error ||
-
-
-| **Check Email Verification Status** ||
-| --- | --- |
-| method | GET |
-| endpoint | /user/verification/status |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-| **Send Password Reset Email** ||
-| --- | --- |
-| method | GET |
-| endpoint | /user/recover |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-
-
-
-
-### Bookmarks
-
-| **Create Bookmark(s)** ||
-| --- | --- |
-| method | POST |
-| endpoint | /profile/bookmarks |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| id | string | yes | yes | valid uuid |
-| **Response** | **Code** | **Returns** |
-|| 201 Created ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-| **Get Bookmark(s)** ||
-| --- | --- |
-| method | GET |
-| endpoint | /profile/bookmarks |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK | { bookmarks objects } |
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-| **Delete Bookmark(s)** ||
-| --- | --- |
-| method | DELETE |
-| endpoint | /profile/bookmarks |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Request Query String** | **Parameter** | **Required** | **Constraints** |
-|| id | yes | valid uuid |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
 
 
 ### National Parks
@@ -307,6 +216,104 @@ Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/
 | Requires Bearer Token in Auth Header | yes |
 | **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
 || _id | string | yes | yes | valid uuid |
+| **Response** | **Code** | **Returns** |
+|| 200 OK ||
+|| 400 Bad Request ||
+|| 401 Unauthorized ||
+|| 500 Internal Server Error ||
+
+
+## Deprecated API Endpoints
+
+| **Verify User Email** ||
+| --- | --- |
+| method | POST |
+| endpoint | /user/verification |
+| Requires Bearer Token in Auth Header | no |
+| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
+|| - | - | - | - | - |
+| **Response** | **Code** | **Returns** |
+|| 200 OK |
+|| 400 Bad Request |
+|| 500 Internal Server Error |
+
+
+| **Resend Verification Email** ||
+| --- | --- |
+| method | GET |
+| endpoint | /user/verification |
+| Requires Bearer Token in Auth Header | yes |
+| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
+|| - | - | - | - | - |
+| **Response** | **Code** | **Returns** |
+|| 200 OK ||
+|| 400 Bad Request ||
+|| 500 Internal Server Error ||
+
+
+| **Check Email Verification Status** ||
+| --- | --- |
+| method | GET |
+| endpoint | /user/verification/status |
+| Requires Bearer Token in Auth Header | yes |
+| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
+|| - | - | - | - | - |
+| **Response** | **Code** | **Returns** |
+|| 200 OK ||
+|| 400 Bad Request ||
+|| 401 Unauthorized ||
+|| 500 Internal Server Error ||
+
+
+| **Send Password Reset Email** ||
+| --- | --- |
+| method | GET |
+| endpoint | /user/recover |
+| Requires Bearer Token in Auth Header | no |
+| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
+|| - | - | - | - | - |
+| **Response** | **Code** | **Returns** |
+
+
+### Bookmarks
+
+| **Create Bookmark(s)** ||
+| --- | --- |
+| method | POST |
+| endpoint | /profile/bookmarks |
+| Requires Bearer Token in Auth Header | yes |
+| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
+|| id | string | yes | yes | valid uuid |
+| **Response** | **Code** | **Returns** |
+|| 201 Created ||
+|| 400 Bad Request ||
+|| 401 Unauthorized ||
+|| 500 Internal Server Error ||
+
+
+| **Get Bookmark(s)** ||
+| --- | --- |
+| method | GET |
+| endpoint | /profile/bookmarks |
+| Requires Bearer Token in Auth Header | yes |
+| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
+|| - | - | - | - | - |
+| **Response** | **Code** | **Returns** |
+|| 200 OK | { bookmarks objects } |
+|| 400 Bad Request ||
+|| 401 Unauthorized ||
+|| 500 Internal Server Error ||
+
+
+| **Delete Bookmark(s)** ||
+| --- | --- |
+| method | DELETE |
+| endpoint | /profile/bookmarks |
+| Requires Bearer Token in Auth Header | yes |
+| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
+|| - | - | - | - | - |
+| **Request Query String** | **Parameter** | **Required** | **Constraints** |
+|| id | yes | valid uuid |
 | **Response** | **Code** | **Returns** |
 || 200 OK ||
 || 400 Bad Request ||

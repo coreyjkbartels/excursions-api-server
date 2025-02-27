@@ -1,0 +1,12 @@
+# See https://redocly.com/docs/cli/configuration for more information.
+
+extends:
+    - recommended
+
+apis:
+    excursions@v0:
+        root: docs/openapi.yaml
+        rules:
+            no-ambiguous-paths: error
+            no-unused-components: error
+            no-unresolved-refs: error
