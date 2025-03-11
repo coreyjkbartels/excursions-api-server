@@ -1,17 +1,102 @@
 const express = require('express');
 const router = new express.Router();
-const auth = require('../middleware/auth');
 
+const NPS_API_URL = process.env.NPS_API_URL;
+const NPS_API_KEY = process.env.NPS_API_KEY;
 
 /**
- *  2 Approaches:
- *  
- *  1. This acts as a middleman to the National Park Service API and takes the user query to get, clean, and return data from said service.
+ *  National Parks Pseudo-Schema
  * 
- *  2. This pulls the data from a custom DB, in which case the data needs to be fetched from NPS API, cleaned, and stored in the database PRIOR to this being fully implemented.
+ *  This is the ideal for a trimmed response
+ *  for the data returned by the NPS api.
+ *  
  */
+
+/** 
+ *  Process
+ * 
+ *  1. Read in Query Parameters from request
+ *  2. Build Query String
+ *  2. Fetch from NPS
+ *  3. Trim returned data from NPS
+ *  4. Return trimmed data to user.
+ * 
+ */
+
+/**
+ *  Query String Options
+ * 
+ *  parkCode - A comma delimited list of park codes (each 4-10 characters in length).
+ *  stateCode - A comma delimited list of 2 character state codes.
+ *  limit - Number of results to return per request. Default is 50.
+ *  q - Term to search on
+ * 
+ */
+
+/**
+ *  TODO:
+ * 
+ *  1. Trim Response Data
+ *  2. Redocly-CLI Output
+ * 
+ */
+
 router.get('/national-parks', async (req, res) => {
-    console.log("GET: /national-parks");
+    try {
+        const endpoint = 'parks';
+        let url = `${NPS_API_URL}/${endpoint}`;
+
+        const options = {};
+
+        const parameters = req.query;
+
+        let query = '';
+
+        if (parameters) {
+            query += `?`;
+
+            for (const [key, value] of Object.entries(parameters)) {
+                if (query.length > 1) {
+                    query += `&`;
+                }
+
+                query += `${key}=${value}`;
+            }
+
+            if (query.length > 1) {
+                query += `&`;
+            }
+
+            query += `api_key=${NPS_API_KEY}`;
+        }
+
+        if (query) {
+            url += query;
+        }
+
+        // fetch data from NPS api
+        let response = await fetch(url, options);
+
+        if (response.ok) {
+            if (response.status === 200) {
+                const data = await response.json();
+
+                /**
+                 *  Trim data as desired
+                 *  Return trimmed data
+                 */
+
+                res.status(200).send(data);
+            }
+        } else {
+            if (response.status === 400) {
+                res.status(400).send();
+            }
+        }
+
+    } catch (exception) {
+        res.status(500).send(exception);
+    }
 });
 
 module.exports = router;
