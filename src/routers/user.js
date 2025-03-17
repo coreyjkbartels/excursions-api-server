@@ -1,13 +1,15 @@
 const express = require('express');
-const router = new express.Router();
+const User = require('../models/user');
 const auth = require('../middleware/auth');
 
-/**
- *  Create New User
- *  # redocly-link
- */
-router.post('/user', async (req, res) => {
+const router = new express.Router();
 
+// ----------------------- //
+// #region User Management //
+// ----------------------- //
+
+// Create a new user
+router.post('/user', async (req, res) => {
     try {
         const user = new User(req.body);
 
@@ -15,27 +17,18 @@ router.post('/user', async (req, res) => {
         const token = await user.generateAuthToken();
 
         res.status(201).send({ user, token });
-    }
-    catch (error) {
+    } catch (error) {
         console.log(error);
         res.status(400).send(error);
     }
 });
 
-
-/**
- *  Get Existing User
- *  # redocly-link
- */
+// Get an existing user
 router.get("/user", auth, async (req, res) => {
-    res.send(req.user);
+    res.status(200).send(req.user);
 });
 
-
-/**
- *  Update Existing User
- *  # redocly-link
- */
+// Update an existing user
 router.patch('/user', auth, async (req, res) => {
     const mods = req.body;
     const props = Object.keys(mods);
@@ -50,48 +43,43 @@ router.patch('/user', auth, async (req, res) => {
         const user = req.user;
         props.forEach((prop) => user[prop] = mods[prop]);
         await user.save();
-        res.send(user);
-    } catch (e) {
-        res.status(400).send(e);
+        res.status(200).send(user);
+    } catch (error) {
+        res.status(400).send(error);
     }
 });
 
-
-/**
- *  Delete Existing User
- *  # redocly-link
- */
+// Delete an existing user
 router.delete('/user', auth, async (req, res) => {
     try {
-        console.log(req.user);
         await User.deleteOne({ _id: req.user._id });
-        res.send(req.user);
-    } catch (e) {
-        res.status(500).send();
+        res.status(200).send(req.user);
+    } catch (error) {
+        res.status(500).send(error);
     }
 });
 
+// ----------------------- //
+// #endregion              //
+// ----------------------- //
 
-/**
- *  Sign User In
- *  # redocly-link
- */
+// ---------------------- //
+// #region Authentication //
+// ---------------------- //
+
+// Grant a user authenticated status
 router.post('/user/sign-in', async (req, res) => {
-
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
         const token = await user.generateAuthToken();
+
         res.status(200).send({ user, token });
-    } catch (e) {
-        res.status(400).send();
+    } catch (error) {
+        res.status(400).send(error);
     }
 });
 
-
-/**
- *  Sign User Out
- *  # redocly-link
- */
+// Remove a user's authenticated status
 router.post("/user/sign-out", auth, async (req, res) => {
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
@@ -100,9 +88,13 @@ router.post("/user/sign-out", auth, async (req, res) => {
         await req.user.save();
 
         res.send();
-    } catch (e) {
-        res.status(500).send();
+    } catch (error) {
+        res.status(500).send(error);
     }
 });
+
+// ---------------------- //
+// #endregion             //
+// ---------------------- //
 
 module.exports = router;

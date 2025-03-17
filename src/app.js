@@ -6,7 +6,8 @@ const cors = require('cors');
 const userRouter = require('./routers/user');
 const parksRouter = require('./routers/national-parks');
 const campgroundsRouter = require('./routers/campgrounds');
-const thingstodoRouter = require('./routers/things-to-do');
+const thingsToDoRouter = require('./routers/things-to-do');
+const excursionRouter = require('./routers/excursions');
 
 const app = express();
 app.use(express.json());
@@ -21,7 +22,8 @@ app.use(function (req, res, next) {
 app.use(userRouter);
 app.use(parksRouter);
 app.use(campgroundsRouter);
-app.use(thingstodoRouter);
+app.use(thingsToDoRouter);
+app.use(excursionRouter);
 
 const port = process.env.PORT;
 app.listen(port, () => {

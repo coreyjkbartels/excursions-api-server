@@ -1,9 +1,40 @@
 openapi: 3.1.0
 
 info:
-    version: 1.0.0
-    title: Example API
+  version: v0.1.0
+  title: Excursions API
+  description: |
+    An excursion travel planner. Good luck implementing this trash. You'll need it. 🤕
     
-    license:
-        name: Apache 2.0
-        url: http://www.apache.org/licenses/LICENSE-2.0.html
+  license:
+    name: GNU Affero General Public License v3.0 (or later)
+    identifier: AGPL-3.0-or-later
+
+servers:
+  - url: 'https://excursions-api.com/api/v1'
+
+components:
+  securitySchemes:
+    BearerToken:
+      $ref: './components/securitySchemes/BearerToken.yaml'
+
+tags:
+  - name: User Management
+    description: Create, fetch, update and delete users.
+  - name: User Authentication
+    description: Manage the authentication status of a user.
+
+x-tagGroups:
+  - name: Users
+    tags:
+      - User Management
+      - User Authentication
+
+paths:
+  # --- Users --- #
+  "/user":
+    $ref: './paths/user.yaml'
+
+          
+                
+                

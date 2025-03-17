@@ -1,0 +1,84 @@
+post:
+  tags:
+    - User Management
+  summary: Create New User
+  description: Return a new user with a bearer token.
+  operationId: createNewUser
+
+  parameters:
+    - name: userId
+
+  responses:
+    201:
+      description: Created
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/User.yaml'
+          examples:
+            "ExampleName":
+              value:
+                $ref: '../examples/createNewUser/joeuser.yaml'
+    400:
+      description: Bad Request
+    500:
+      description: Internal Server Error
+
+get:
+  tags:
+    - User Management
+  summary: Get User
+  description: Return a user object.
+  operationId: getUser
+
+  security:
+    - BearerToken: []
+
+  responses:
+    200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/User.yaml'
+          examples:
+            "ExampleName":
+              value:
+                $ref: '../examples/getUser/joeuser.yaml'
+    400:
+      description: Bad Request
+    401:
+      description: Unauthorized
+    500:
+      description: Internal Server Error
+
+patch:
+  tags:
+    - User Management
+  summary: Update User
+  description: Return an updated user object.
+  operationId: updateUser
+
+  security:
+    - BearerToken: []
+
+  responses:
+    200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/User.yaml'
+          examples:
+            "ExampleName":
+              value:
+                $ref: '../examples/updateUser/userjoe.yaml'
+    400:
+      description: Bad Request
+      # $ref: '../components/responses/BadRequest.yaml'
+    401:
+      description: Unauthorized
+    500:
+      description: Internal Server Error
+
+delete:

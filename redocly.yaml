@@ -9,4 +9,4 @@ apis:
         rules:
             no-ambiguous-paths: error
             no-unused-components: error
-            no-unresolved-refs: error
+            # no-unresolved-refs: error

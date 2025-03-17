@@ -29,39 +29,50 @@ const userSchema = new Schema({
     firstName: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        lowercase: true,
     },
     lastName: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        lowercase: true,
     },
     userName: {
-        // TODO: Auto-generated with first and last names. (i.e., "Will German"  --> "wgerman")
         type: String,
         required: true,
         trim: true,
         lowercase: true
+        // TODO: Auto-generated with first and last names. (i.e., "Will German"  --> "wgerman")
     },
     avatar: {
         // TODO: Add profile picture
-        type: Buffer
+        // type: Buffer
     },
     tokens: [{
         token: {
-            // TODO: Bake in 7 day maximum before the server cleanses the tokens
-            // --> Date objects for when token is set and use "expires" property on the date for expiration.
-            // "Your session has expired."
             type: String,
-            required: true
+            required: false
         }
+    }],
+    excursions: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Excursion',
+        default: null,
+    }],
+    completedExcursions: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Excursion',
+        default: null,
+        // probably requires a validator to make sure the "isComplete" property on the Excursion is true
     }]
 });
 
 
+
 /**
- * 
- * @returns 
+ *  toJSON
+ *  @returns JSON userObject
  */
 userSchema.methods.toJSON = function () {
     const user = this;
@@ -78,8 +89,8 @@ userSchema.methods.toJSON = function () {
 
 
 /**
- * 
- * @returns 
+ *  generateAuthToken
+ *  @returns string bearerToken
  */
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
@@ -94,22 +105,22 @@ userSchema.methods.generateAuthToken = async function () {
 
 
 /**
- * 
- * @param {*} email 
- * @param {*} password 
- * @returns 
+ *  findByCredentials
+ *  @param {*} email 
+ *  @param {*} password 
+ *  @returns 
  */
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-        throw new Error('Unable to login');
+        throw new Error('Unable to sign in');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-        throw new Error('Unable to login');
+        throw new Error('Unable to sign in');
     }
 
     return user;

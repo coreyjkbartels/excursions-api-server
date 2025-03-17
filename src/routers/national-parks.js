@@ -8,8 +8,7 @@ const NPS_API_KEY = process.env.NPS_API_KEY;
  *  National Parks Pseudo-Schema
  * 
  *  This is the ideal for a trimmed response
- *  for the data returned by the NPS api.
- *  
+ *  for the data returned by the NPS api. 
  */
 
 /** 
@@ -30,14 +29,6 @@ const NPS_API_KEY = process.env.NPS_API_KEY;
  *  stateCode - A comma delimited list of 2 character state codes.
  *  limit - Number of results to return per request. Default is 50.
  *  q - Term to search on
- * 
- */
-
-/**
- *  TODO:
- * 
- *  1. Trim Response Data
- *  2. Redocly-CLI Output
  * 
  */
 
@@ -81,10 +72,17 @@ router.get('/national-parks', async (req, res) => {
             if (response.status === 200) {
                 const data = await response.json();
 
-                /**
-                 *  Trim data as desired
-                 *  Return trimmed data
-                 */
+                // remove excess data
+                // for (let i = 0; i < data.data.length; i++) {
+                //     delete data.data[i].latitude;
+                //     delete data.data[i].longitude;
+                //     delete data.data[i].latLong;
+                //     delete data.data[i].contacts;
+                //     delete data.data[i].topics;
+                //     delete data.data[i].weatherInfo;
+                //     delete data.data[i].relevanceScore;
+                //     delete data.data[i].name;
+                // }
 
                 res.status(200).send(data);
             }

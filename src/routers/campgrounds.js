@@ -12,9 +12,6 @@ const NPS_API_KEY = process.env.NPS_API_KEY;
  * 
  */
 
-// This is literally the same exact code for the "national-parks" endpoint.
-// NPS queries for this endpoint have the exact same parameters as the "parks" endpoint.
-
 router.get('/campgrounds', async (req, res) => {
 
     try {
@@ -56,10 +53,16 @@ router.get('/campgrounds', async (req, res) => {
             if (response.status === 200) {
                 const data = await response.json();
 
-                /**
-                 *  Trim data as desired
-                 *  Return trimmed data
-                 */
+                // for (let i = 0; i < data.data.length; i++) {
+                //     delete data.data[i].latitude;
+                //     delete data.data[i].longitude;
+                //     delete data.data[i].latLong;
+                //     delete data.data[i].contacts;
+                //     delete data.data[i].topics;
+                //     delete data.data[i].weatherInfo;
+                //     delete data.data[i].relevanceScore;
+                //     delete data.data[i].name;
+                // }
 
                 res.status(200).send(data);
             }

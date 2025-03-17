@@ -45,10 +45,16 @@ router.get('/things-to-do', async (req, res) => {
             if (response.status === 200) {
                 const data = await response.json();
 
-                /**
-                 *  Trim data as desired
-                 *  Return trimmed data
-                 */
+                // for (let i = 0; i < data.data.length; i++) {
+                //     delete data.data[i].latitude;
+                //     delete data.data[i].longitude;
+                //     delete data.data[i].latLong;
+                //     delete data.data[i].contacts;
+                //     delete data.data[i].topics;
+                //     delete data.data[i].weatherInfo;
+                //     delete data.data[i].relevanceScore;
+                //     delete data.data[i].name;
+                // }
 
                 res.status(200).send(data);
             }

@@ -1,0 +1,5 @@
+type: String
+description: The ID of this object
+format: BSON
+# pattern: "[0-9a-f]{8}(-[0-9a-f]{3})-[0-9a-f]{12}"
+example: 67d75fdeb5e9f677795522ec
