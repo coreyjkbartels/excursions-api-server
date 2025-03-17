@@ -27,11 +27,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ## Documentation
 
-## App Diagram
+### App Diagram
 
 [View on Figma](https://www.figma.com/board/0aFhBohj24KeanH30Csd0D/CSCI-430-%E2%80%94-USA-National-Parks-Travel-Planner?node-id=0-1&t=H3pdiFYVjpLQVJQR-1)
 
-## API Protocol
+### API Protocol
 
 [View on GitHub Pages]()
 ## Features
