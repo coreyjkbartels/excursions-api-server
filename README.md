@@ -1,6 +1,31 @@
+
 # USA National Park Excursions
 
-This is a travel planning app based around the United States National Parks.
+A travel planning app based around the United States National Parks.
+## License
+
+[GNU Affero General Public License v3.0 (or later)](https://www.gnu.org/licenses/agpl-3.0.en.html)
+
+Copyright (C) 2025  William S. German
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+## Authors
+
+- Will German ([@will-german](https://github.com/will-german))
+- Eric McGregor ([@erimcg](https://github.com/erimcg))
+
+## Documentation
 
 ## App Diagram
 
@@ -8,314 +33,66 @@ This is a travel planning app based around the United States National Parks.
 
 ## API Protocol
 
-### Table of Contents
+[View on GitHub Pages]()
+## Features
 
-1. [Users](#user)
-2. [National Parks](#national-parks)
-3. [Campgrounds](#campgrounds)
-4. [Things To Do](#things-to-do)
-5. [Excursions](#excursions)
-6. [Deprecated Endpoints](#deprecated-api-endpoints)
-
-### User
-
-| **Create User** ||
-| --- | --- |
-| method | POST |
-| endpoint | /user |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| firstName | string | no | yes | between 2 and 30 characters |
-|| lastName | string | no | yes | between 2 and 30 characters |
-|| email | string | yes | yes | valid email |
-|| password | string | no | yes | minimum length of 8 characters |
-| **Response** | **Code** | **Returns** |
-|| 201 Created |
-|| 400 Bad Request |
-|| 500 Internal Server Error |
+- Light/dark mode toggle
+- Live previews
+- Fullscreen mode
+- Cross platform
 
 
-| **Sign User In** ||
-| --- | --- |
-| method | POST |
-| endpoint | /user/sign-in |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| email | string | yes | yes | valid email |
-|| password | string | no | yes | minimum length of 8 characters |
-| **Response** | **Code** | **Returns** |
-|| 200 OK | { "user": User, "token": string } |
-|| 400 Bad Request |
-|| 401 Unauthorized | "Email has not been verified."
-|| 500 Internal Server Error | "No such user"
+##  Changelog
 
+### Latest - v0.1.0 - 2025-03-17
 
-| **Sign User Out** ||
-| --- | --- |
-| method | POST |
-| endpoint | /user/sign-out |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK |
-|| 500 Internal Server Error |
+#### Added
 
+- [version] - [added feature] ([#0000]())
 
-| **Update User** ||
-| --- | --- |
-| method | PATCH |
-| endpoint | /user/update |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| firstName | string | no | no | between 2 and 30 characters |
-|| lastName | string | no | no | between 2 and 30 characters |
-|| email | string | yes | no | valid email |
-|| password | string | no | no | minimum length of 8 characters |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
+#### Changed
 
+- [version] - [changed feature] ([#0000]())
 
-| **Delete User** ||
-| --- | --- |
-| method | DELETE |
-| endpoint | /user/delete |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK |
-|| 400 Bad Request |
-|| 403 Forbidden |
-|| 500 Internal Server Error |
+#### Fixed
 
+- [version] - [fixed bug] ([#0000]())
 
-### National Parks
+#### Removed
 
-| **Get National Parks** ||
-| --- | --- |
-| method | GET |
-| endpoint | /parks |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Request Query String** | **Parameter** | **Required** | **Constraints** |
-|| limit | no | positive integer value |
-|| stateCode | no | valid 2 letter state code |
-|| parkCode | no | valid 4 letter park code |
-| **Response** | **Code** | **Returns** |
-|| 200 OK | { national parks objects array } |
-|| 400 Bad Request ||
-|| 500 Internal Server Error ||
+- [version] - [removed feature] ([#0000]())
+### Unreleased - 2025-03-17
 
+#### Added
 
+- [version] - [added feature] ([#0000]())
 
+#### Changed
 
-### Campgrounds
+- [version] - [changed feature] ([#0000]())
 
-Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/{park-slug}"
+#### Fixed
 
-| **Get Campground(s)** ||
-| --- | --- |
-| method | GET |
-| endpoint | /{national-park-id}/campgrounds |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Request Query String** | **Parameter** | **Required** | **Constraints** |
-|| limit | no | positive integer value |
-| **Response** | **Code** | **Returns** |
-|| 200 OK | { national park campgrounds objects array } |
-|| 400 Bad Request ||
-|| 500 Internal Server Error ||
+- [version] - [fixed bug] ([#0000]())
 
+#### Removed
 
+- [version] - [removed feature] ([#0000]())
+## Environment Variables
 
+To run this project, you will need to add the following environment variables to your .env file
 
-### Things To Do
+`PORT`
 
-Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/{park-slug}"
+`MONGODB_URL`
 
-| **Get Things To Do ** ||
-| --- | --- |
-| method | GET |
-| endpoint | /{national-park-id}/thingstodo |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Request Query String** | **Parameter** | **Required** | **Constraints** |
-|| limit | no | positive integer value |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 500 Internal Server Error ||
+`JSON_WEBTOKEN_SECRET`
 
+`NPS_API_URL`
 
+`NPS_API_KEY`
 
-### Excursions
+## Deployment
 
-Consider updating the "/{national-park-id}" to "/{state-code}/{park-code}" OR "/{park-slug}"
+Section coming soon.
 
-| **Create Excursion(s)** ||
-| --- | --- |
-| method | POST |
-| endpoint | /{national-park-id}/excursions |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| stateCode | string | yes | yes | valid 2 letter state code |
-|| parkCode | string | yes | yes | valid 4 letter park code |
-|| name | string | no | yes | between 8 and 255 characters |
-|| description | string | no | yes | between 16 and 510 characters |
-|| thingstodo | array of ids | no | yes | valid uuid |
-| **Response** | **Code** | **Returns** |
-|| 201 Created ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-| **Get Excursion(s)** ||
-| --- | --- |
-| method | GET |
-| endpoint | /{national-park-id}/excursions |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Request Query String** | **Parameter** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK | { excursions objects array } |
-|| 400 Bad Request ||
-|| 500 Internal Server Error ||
-
-
-| **Update Excursion(s)** ||
-| --- | --- |
-| method | PATCH |
-| endpoint | /{national-park-id}/excursions |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-|| _id | string | yes | yes | valid uuid |
-| **Request Query String** | **Parameter** | **Required** | **Constraints** |
-|| excursionName | no | non-empty string |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-| **Delete Excursions(s)** ||
-| --- | --- |
-| method | DELETE |
-| endpoint | /{national-park-id}/excursions |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| _id | string | yes | yes | valid uuid |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-## Deprecated API Endpoints
-
-| **Verify User Email** ||
-| --- | --- |
-| method | POST |
-| endpoint | /user/verification |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK |
-|| 400 Bad Request |
-|| 500 Internal Server Error |
-
-
-| **Resend Verification Email** ||
-| --- | --- |
-| method | GET |
-| endpoint | /user/verification |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 500 Internal Server Error ||
-
-
-| **Check Email Verification Status** ||
-| --- | --- |
-| method | GET |
-| endpoint | /user/verification/status |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-| **Send Password Reset Email** ||
-| --- | --- |
-| method | GET |
-| endpoint | /user/recover |
-| Requires Bearer Token in Auth Header | no |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-
-
-### Bookmarks
-
-| **Create Bookmark(s)** ||
-| --- | --- |
-| method | POST |
-| endpoint | /profile/bookmarks |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| id | string | yes | yes | valid uuid |
-| **Response** | **Code** | **Returns** |
-|| 201 Created ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-| **Get Bookmark(s)** ||
-| --- | --- |
-| method | GET |
-| endpoint | /profile/bookmarks |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Response** | **Code** | **Returns** |
-|| 200 OK | { bookmarks objects } |
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
-
-
-| **Delete Bookmark(s)** ||
-| --- | --- |
-| method | DELETE |
-| endpoint | /profile/bookmarks |
-| Requires Bearer Token in Auth Header | yes |
-| **Request Body** | **Property** | **Type** | **Unique** | **Required** | **Constraints** |
-|| - | - | - | - | - |
-| **Request Query String** | **Parameter** | **Required** | **Constraints** |
-|| id | yes | valid uuid |
-| **Response** | **Code** | **Returns** |
-|| 200 OK ||
-|| 400 Bad Request ||
-|| 401 Unauthorized ||
-|| 500 Internal Server Error ||
