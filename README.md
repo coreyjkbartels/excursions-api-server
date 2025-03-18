@@ -92,3 +92,7 @@ To run this project, you will need to add the following environment variables to
 
 Section coming soon.
 
+## Community
+
+[Join Discord Server](https://discord.gg/X6RFPjjxN5)
+
