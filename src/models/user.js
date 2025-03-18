@@ -65,7 +65,7 @@ const userSchema = new Schema({
         ref: 'Excursion',
         default: null,
         // probably requires a validator to make sure the "isComplete" property on the Excursion is true
-    }]
+    }],
 });
 
 
