@@ -1,4 +1,0 @@
-type: String
-description: The name of an object, user, etc.
-minLength: 1,
-maxLength: 64,

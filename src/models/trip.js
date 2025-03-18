@@ -13,15 +13,17 @@ const tripSchema = new Schema({
     name: {
         type: String,
         unique: true,
-        required: false,
+        required: true,
         trim: true,
-        default: "Trip #", // replace with func to iterate over number of trips with the same excursionId and increment the "#" by 1
+        minLength: 1,
+        maxLength: 64,
     },
     description: {
         type: String,
         unique: false,
         required: false,
         trim: true,
+        minLength: 1,
         maxLength: 255,
     },
     park: {
@@ -64,7 +66,7 @@ const tripSchema = new Schema({
         type: Date,
         required: false,
     },
-    activities: [{
+    thingstodo: [{
         // things-to-do id's --> only acquired from an NPS API call
     }],
 },

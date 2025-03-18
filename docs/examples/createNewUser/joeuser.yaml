@@ -1,9 +1,0 @@
-user:
-  id: 67d75fdeb5e9f677795522ec
-  email: joe@user.com
-  firstName: Joe
-  lastName: User
-  userName: joeuser
-  excursions: []
-  completedExcursions: []
-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2Q3NWZkZWI1ZTlmNjc3Nzk1NTIyZWMiLCJpYXQiOjE3NDIxODQyMjN9.npd55JQ9wkxQ7dhFqJQmje7ZNaV42QG2UhE_OWl0eWk

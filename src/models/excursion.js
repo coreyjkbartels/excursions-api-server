@@ -10,19 +10,27 @@ const excursionSchema = new Schema({
         unique: false,
         required: true,
         trim: true,
-        default: "Excursion #", // replace with function to query excursions by userId and then increment the number by 1
+        minLength: 1,
+        maxLength: 64,
     },
     description: {
         type: String,
         unique: false,
         required: true,
         trim: true,
+        minLength: 1,
+        maxLength: 255,
     },
-    creator: {
+    host: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         default: null
     },
+    participants: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    }],
     trips: [{
         type: Schema.Types.ObjectId,
         ref: 'Trip',
