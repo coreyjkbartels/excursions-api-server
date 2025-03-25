@@ -3,7 +3,9 @@ require('./db/mongoose');
 const express = require('express');
 const cors = require('cors');
 
-const userRouter = require('./routers/user');
+const userRouter = require('./routers/users');
+const npsRouter = require('./routers/national-park-service');
+
 const parksRouter = require('./routers/national-parks');
 const campgroundsRouter = require('./routers/campgrounds');
 const thingsToDoRouter = require('./routers/things-to-do');
@@ -20,10 +22,12 @@ app.use(function (req, res, next) {
 });
 
 app.use(userRouter);
-app.use(parksRouter);
-app.use(campgroundsRouter);
-app.use(thingsToDoRouter);
-app.use(excursionRouter);
+app.use(npsRouter);
+
+// app.use(parksRouter);
+// app.use(campgroundsRouter);
+// app.use(thingsToDoRouter);
+// app.use(excursionRouter);
 
 const port = process.env.PORT;
 app.listen(port, () => {

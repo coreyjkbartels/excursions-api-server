@@ -3,7 +3,6 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -43,11 +42,10 @@ const userSchema = new Schema({
         required: true,
         trim: true,
         lowercase: true
-        // TODO: Auto-generated with first and last names. (i.e., "Will German"  --> "wgerman")
     },
     avatar: {
         // TODO: Add profile picture
-        // type: Buffer
+        // type: Buffer (?)
     },
     tokens: [{
         token: {
@@ -55,10 +53,17 @@ const userSchema = new Schema({
             required: false
         }
     }],
-    excursions: [{
+    hostedExcursions: [{
         type: Schema.Types.ObjectId,
         ref: 'Excursion',
         default: null,
+        // probably requires a validator to make sure host matches this user id
+    }],
+    sharedExcursions: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Excursion',
+        default: null,
+        // probably requires a validator to make sure host does not match this user id
     }],
     completedExcursions: [{
         type: Schema.Types.ObjectId,

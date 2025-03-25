@@ -38,42 +38,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 - Friends System
 - Create, modify, or share Excursions
 
-##  Changelog
-
-### Latest - v0.1.0 - 2025-03-17
-
-#### Added
-
-- [version] - [added feature] ([#0000]())
-
-#### Changed
-
-- [version] - [changed feature] ([#0000]())
-
-#### Fixed
-
-- [version] - [fixed bug] ([#0000]())
-
-#### Removed
-
-- [version] - [removed feature] ([#0000]())
-### Unreleased - 2025-03-17
-
-#### Added
-
-- [version] - [added feature] ([#0000]())
-
-#### Changed
-
-- [version] - [changed feature] ([#0000]())
-
-#### Fixed
-
-- [version] - [fixed bug] ([#0000]())
-
-#### Removed
-
-- [version] - [removed feature] ([#0000]())
 ## Environment Variables
 
 To run this project, you will need to add the following environment variables to your .env file
@@ -84,11 +48,16 @@ To run this project, you will need to add the following environment variables to
 
 `JSON_WEBTOKEN_SECRET`
 
+
 `NPS_API_URL`
 
 `NPS_API_KEY`
 
 ## Deployment
+
+<!-- ### Locally -->
+
+<!-- ### Cloud -->
 
 Section coming soon.
 

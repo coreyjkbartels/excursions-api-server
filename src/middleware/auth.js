@@ -1,12 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-/**
- *  auth
- *  @param {*} req 
- *  @param {*} res 
- *  @param {*} next 
- */
 const auth = async (req, res, next) => {
     try {
         let token = req.header('Authorization');
@@ -25,8 +19,8 @@ const auth = async (req, res, next) => {
 
         next();
 
-    } catch (e) {
-        res.status(401).send({ error: 'Invalid authentication status.' });
+    } catch (error) {
+        res.status(401).send({ error: 'Unauthorized' });
     }
 };
 
