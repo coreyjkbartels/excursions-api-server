@@ -5,11 +5,6 @@ const auth = require('../middleware/auth');
 
 const router = new express.Router();
 
-const NPS_API_URL = process.env.NPS_API_URL;
-const NPS_API_KEY = process.env.NPS_API_KEY;
-
-// (╯°o°）╯︵ ┻━┻ eric why???
-
 // ---------------------------- //
 // #region Excursion Management //
 // ---------------------------- //

@@ -19,17 +19,6 @@ const NPS_API_KEY = process.env.NPS_API_KEY;
  *  2. Fetch from NPS
  *  3. Trim returned data from NPS
  *  4. Return trimmed data to user.
- * 
- */
-
-/**
- *  Query String Options
- * 
- *  parkCode - A comma delimited list of park codes (each 4-10 characters in length).
- *  stateCode - A comma delimited list of 2 character state codes.
- *  limit - Number of results to return per request. Default is 50.
- *  q - Term to search on
- * 
  */
 
 router.get('/national-parks', async (req, res) => {

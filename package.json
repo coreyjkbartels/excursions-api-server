@@ -1,8 +1,8 @@
 {
-  "name": "csci-430-api-server",
+  "name": "excursions-api-server",
   "version": "1.0.0",
   "description": "An api server for the Bridgewater College CSCI-430 Server-side Development course.",
-  "license": "ISC",
+  "license": "AGPL-3.0-or-later",
   "author": "Will German",
   "type": "commonjs",
   "main": "src/app.js",
