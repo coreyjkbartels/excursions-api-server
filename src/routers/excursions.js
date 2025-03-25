@@ -9,7 +9,10 @@ const router = new express.Router();
 // #region Excursion Management //
 // ---------------------------- //
 
-// Create a new excursion
+/**
+ *  Create Excursion
+ * 
+ */
 router.post('/excursion', auth, async (req, res) => {
     try {
         const excursion = new Excursion(req.body);
@@ -22,29 +25,34 @@ router.post('/excursion', auth, async (req, res) => {
     }
 });
 
-// Get all excursions for a user
+/**
+ *  Get Excursions By User
+ *  
+ */
 router.get('/excursions', auth, async (req, res) => {
     try {
         const user = req.user;
 
         if (!user) {
-            throw new Error('Unable to retrieve excursions');
+            res.status(404);
+            throw new Error('Not Found');
         }
 
         const excursions = await Excursion.findByUser({ user });
 
         if (excursions.length === 0) {
-            throw new Error('Unable to retrieve excursions');
+            res.status(404);
+            throw new Error('Not Found');
         }
-
-        // maybe don't need {}
         res.status(200).send({ excursions });
     } catch (error) {
-        res.status(500).send(error);
+        res.send(error);
     }
 });
 
-// Get an excursion by id
+/**
+ *  Get Excursion By Id
+ */
 router.get('/excursion/:id', auth, async (req, res) => {
     try {
         const excursion = await Excursion.findById(req.params.id);
@@ -59,7 +67,10 @@ router.get('/excursion/:id', auth, async (req, res) => {
     }
 });
 
-// Update an existing excursion
+/**
+ *  Update Excursion By Id
+ * 
+ */
 router.patch('/excursion/:id', auth, async (req, res) => {
     const mods = req.body;
     const props = Object.keys(mods);
@@ -86,7 +97,9 @@ router.patch('/excursion/:id', auth, async (req, res) => {
 
 });
 
-// Delete an existing excursion
+/**
+ *  Delete Excursion By Id
+ */
 router.delete('/excursion/:id', auth, async (req, res) => {
     try {
         const excursion = Excursion.findById(req.params.id);
