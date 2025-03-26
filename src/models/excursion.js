@@ -76,11 +76,7 @@ const excursionSchema = new Schema({
  *  @returns [{ excursion }]
  */
 excursionSchema.statics.findByUser = async (user) => {
-    const excursions = await Excursion.find({ host: user });
-
-    if (excursions.length < 1) {
-        throw new Error('Not Found');
-    }
+    const excursions = await Excursion.find({ host: user._id }).exec();
 
     return excursions;
 };

@@ -100,6 +100,18 @@ const tripSchema = new Schema({
 },
     { timestamps: true });
 
+// Get all trips for a given user
+/**
+ *  findByUser
+ *  @param { User } user
+ *  @returns [{ trip }]
+ */
+tripSchema.statics.findByUser = async (user) => {
+    const trips = await Trip.find({ host: user._id }).exec();
+
+    return trips;
+};
+
 const Trip = mongoose.model('Trip', tripSchema);
 
 module.exports = Trip;

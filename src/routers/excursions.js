@@ -39,8 +39,7 @@ router.get('/excursions', auth, async (req, res) => {
             throw new Error('Not Found');
         }
 
-        // TODO: Fix this function, then implement same method for trips
-        const excursions = await Excursion.findByUser({ user });
+        const excursions = await Excursion.findByUser(user);
 
         if (excursions.length < 1) {
             res.status(404);
@@ -78,10 +77,14 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
  *  Update Excursion By Id
  *  [ docs link ]
  */
-
-// TODO: If there are NO mods, throw an error.
 router.patch('/excursion/:excursionId', auth, async (req, res) => {
     const mods = req.body;
+
+    if (mods.length === 0) {
+        res.status(400);
+        throw new Error("Bad Request");
+    }
+
     const props = Object.keys(mods);
     const modifiable = ['name', 'description', 'participants', 'trips', 'isComplete'];
 
@@ -119,11 +122,9 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
  *  Delete Excursion By Id
  *  [ docs link ]
  */
-
-// TODO: Not returning deleted excursion as expected
 router.delete('/excursion/:excursionId', auth, async (req, res) => {
     try {
-        const excursion = Excursion.findById({ _id: req.params.id });
+        const excursion = Excursion.findById({ _id: req.params.excursionId });
         const user = await User.findById({ _id: req.user._id });
 
         if (!excursion.host.equals(user._id)) {
@@ -214,23 +215,7 @@ router.get('/trips/:userId', auth, async (req, res) => {
             throw new Error("User Not Found");
         }
 
-        const tripIds = user.hostedTrips;
-
-        if (tripIds.length < 1) {
-            res.status(404);
-            throw new Error("Trips Not Found");
-        }
-
-        /**
-         *  TODO: findByUser method (like Excursion)
-         */
-        let trips = [];
-
-        for (let i = 0; i < tripIds.length; i++) {
-            let trip = await Trip.findById({ _id: tripIds[i] });
-
-            trips.push(trip);
-        }
+        const trips = await Trip.findByUser(user);
 
         if (trips.length < 1) {
             res.status(404);
@@ -248,10 +233,14 @@ router.get('/trips/:userId', auth, async (req, res) => {
  *  Update Trip By Id
  *  [ docs link ]
  */
-
-// TODO: If there are NO mods, throw an error.
 router.patch('/trip/:tripId', auth, async (req, res) => {
     const mods = req.body;
+
+    if (mods.length === 0) {
+        res.status(400);
+        throw new Error("Bad Request");
+    }
+
     const props = Object.keys(mods);
     const modifiable = ['name', 'description', 'park', 'campground', 'thingstodo', 'startDate', 'endDate'];
 
@@ -292,6 +281,7 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
 router.delete('/trip/:tripId', auth, async (req, res) => {
     try {
         const trip = await Trip.findById({ _id: req.params.tripId });
+        // could replace below with "req.user._id"
         const user = await User.findById({ _id: req.user._id });
 
         if (!trip.host.equals(user._id)) {
