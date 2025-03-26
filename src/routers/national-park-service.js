@@ -317,7 +317,7 @@ router.get('/multimedia/galleries', async (req, res) => {
  */
 router.get('/multimedia/galleries/assets', async (req, res) => {
     try {
-        const endpoint = 'multimedia/audio';
+        const endpoint = 'multimedia/galleries/assets';
         let url = `${NPS_API_URL}/${endpoint}`;
 
         const options = {};
@@ -358,7 +358,7 @@ router.get('/multimedia/galleries/assets', async (req, res) => {
  */
 router.get('/multimedia/videos', async (req, res) => {
     try {
-        const endpoint = 'multimedia/audio';
+        const endpoint = 'multimedia/videos';
         let url = `${NPS_API_URL}/${endpoint}`;
 
         const options = {};
