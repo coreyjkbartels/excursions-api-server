@@ -1,6 +1,7 @@
 const express = require('express');
-const Trip = require('../models/trip');
 const Excursion = require('../models/excursion');
+const Trip = require('../models/trip');
+const User = require('../models/user');
 const auth = require('../middleware/auth');
 
 const router = new express.Router();
@@ -11,7 +12,7 @@ const router = new express.Router();
 
 /**
  *  Create Excursion
- * 
+ *  [ docs link ]
  */
 router.post('/excursion', auth, async (req, res) => {
     try {
@@ -21,13 +22,13 @@ router.post('/excursion', auth, async (req, res) => {
         res.status(201).send({ excursion });
     } catch (error) {
         console.log(error);
-        res.status(400).send(error);
+        res.status(400).send({ error: 'Bad Request' });
     }
 });
 
 /**
  *  Get Excursions By User
- *  
+ *  [ docs link ]
  */
 router.get('/excursions', auth, async (req, res) => {
     try {
@@ -38,76 +39,109 @@ router.get('/excursions', auth, async (req, res) => {
             throw new Error('Not Found');
         }
 
+        // TODO: Fix this function, then implement same method for trips
         const excursions = await Excursion.findByUser({ user });
 
-        if (excursions.length === 0) {
+        if (excursions.length < 1) {
             res.status(404);
             throw new Error('Not Found');
         }
+
         res.status(200).send({ excursions });
     } catch (error) {
+        console.log(error);
         res.send(error);
     }
 });
 
 /**
  *  Get Excursion By Id
+ *  [ docs link ]
  */
-router.get('/excursion/:id', auth, async (req, res) => {
+router.get('/excursion/:excursionId', auth, async (req, res) => {
     try {
-        const excursion = await Excursion.findById(req.params.id);
+        const excursion = await Excursion.findById(req.params.excursionId);
 
         if (!excursion) {
-            throw new Error("Could not locate requested resource.");
+            res.status(404);
+            throw new Error("Not Found");
         }
 
         res.status(200).send({ excursion });
     } catch (error) {
-        res.status(404).send({ Error: "Requested resource not found." });
+        console.log(error);
+        res.send(error);
     }
 });
 
 /**
  *  Update Excursion By Id
- * 
+ *  [ docs link ]
  */
-router.patch('/excursion/:id', auth, async (req, res) => {
+
+// TODO: If there are NO mods, throw an error.
+router.patch('/excursion/:excursionId', auth, async (req, res) => {
     const mods = req.body;
     const props = Object.keys(mods);
-
-    const modifiable = [];
+    const modifiable = ['name', 'description', 'participants', 'trips', 'isComplete'];
 
     const isValid = props.every((prop) => modifiable.includes(prop));
 
     if (!isValid) {
-        return res.status(400).send({ Error: 'Invalid updates.' });
+        return res.status(400).send({ Error: 'Invalid Updates.' });
     }
 
     try {
-        const excursion = await Excursion.findById(req.params.id);
+        const excursionId = req.params.excursionId;
+        const excursion = await Excursion.findById({ _id: excursionId });
+
+        if (!excursion) {
+            res.status(404);
+            throw new Error("Not Found");
+        }
+
+        if (!excursion.host.equals(req.user._id)) {
+            res.status(403);
+            throw new Error("Forbidden");
+        }
 
         props.forEach((prop) => excursion[prop] = mods[prop]);
         await excursion.save();
 
         res.status(200).send({ excursion });
     } catch (error) {
-        res.status(400).send(error);
+        console.log(error);
+        res.send(error);
     }
-
-
 });
 
 /**
  *  Delete Excursion By Id
+ *  [ docs link ]
  */
-router.delete('/excursion/:id', auth, async (req, res) => {
+
+// TODO: Not returning deleted excursion as expected
+router.delete('/excursion/:excursionId', auth, async (req, res) => {
     try {
-        const excursion = Excursion.findById(req.params.id);
+        const excursion = Excursion.findById({ _id: req.params.id });
+        const user = await User.findById({ _id: req.user._id });
+
+        if (!excursion.host.equals(user._id)) {
+            res.status(403);
+            throw new Error("Forbidden");
+        }
+
         await Excursion.deleteOne({ _id: req.params.id });
+
+        await User.updateOne((
+            { _id: user._id },
+            { $pull: { hostedExcursions: excursion._id } }
+        ));
 
         res.status(200).send(excursion);
     } catch (error) {
-        res.status(500).send(error);
+        console.log(error);
+        res.send(error);
     }
 });
 
@@ -119,37 +153,164 @@ router.delete('/excursion/:id', auth, async (req, res) => {
 // #region Trip Management //
 // ----------------------- //
 
-// Create New Trip
-router.post('/excursion/:id/trips', auth, async (req, res) => {
+/**
+ *  Create Trip
+ *  [ docs link ]
+ */
+router.post('/trip', auth, async (req, res) => {
     try {
         const trip = new Trip(req.body);
         await trip.save();
 
+        if (!trip._id) {
+            res.status(500);
+            throw new Error("Internal Server Error");
+        }
+
+        await User.updateOne((
+            { _id: req.body.host },
+            { $push: { hostedTrips: trip._id } }
+        ));
+
         res.status(201).send({ trip });
     } catch (error) {
         console.log(error);
-        res.status(400).send(error);
+        res.send(error);
     }
 });
 
-// Get All Trips for an Excursion
-router.get('/excursion/:id/trips', async (req, res) => {
-    // Potentially redundant
+/**
+ *  Get Trip By Id
+ *  [ docs link ]
+ */
+router.get('/trip/:tripId', auth, async (req, res) => {
+    try {
+        const tripId = req.params.tripId;
+        const trip = await Trip.findById({ _id: tripId });
+
+        if (!trip) {
+            res.status(404);
+            throw new Error("Not Found");
+        }
+
+        res.status(200).send(trip);
+    } catch (error) {
+        res.send(error);
+    }
 });
 
-// Get Single Trip for an Excursion
-router.get('/excursion/:id/trips/:id', async (req, res) => {
-    // Potentially redundant
+/**
+ *  Get Trip By User Id
+ *  [ docs link ]
+ */
+router.get('/trips/:userId', auth, async (req, res) => {
+    try {
+        const userId = req.params.userId;
+
+        const user = await User.findById({ _id: userId });
+
+        if (!user) {
+            res.status(404);
+            throw new Error("User Not Found");
+        }
+
+        const tripIds = user.hostedTrips;
+
+        if (tripIds.length < 1) {
+            res.status(404);
+            throw new Error("Trips Not Found");
+        }
+
+        /**
+         *  TODO: findByUser method (like Excursion)
+         */
+        let trips = [];
+
+        for (let i = 0; i < tripIds.length; i++) {
+            let trip = await Trip.findById({ _id: tripIds[i] });
+
+            trips.push(trip);
+        }
+
+        if (trips.length < 1) {
+            res.status(404);
+            throw new Error("Not Found");
+        }
+
+        res.status(200).send(trips);
+    } catch (error) {
+        console.log(error);
+        res.send(error);
+    }
 });
 
-// Update Trip for an Excursion
-router.patch('/excursion/:id/trips/:id', async (req, res) => {
-    // WIP
+/**
+ *  Update Trip By Id
+ *  [ docs link ]
+ */
+
+// TODO: If there are NO mods, throw an error.
+router.patch('/trip/:tripId', auth, async (req, res) => {
+    const mods = req.body;
+    const props = Object.keys(mods);
+    const modifiable = ['name', 'description', 'park', 'campground', 'thingstodo', 'startDate', 'endDate'];
+
+    const isValid = props.every((prop) => modifiable.includes(prop));
+
+    if (!isValid) {
+        return res.status(400).send({ Error: 'Invalid Updates.' });
+    }
+
+    try {
+        const tripId = req.params.tripId;
+        const trip = await Trip.findById({ _id: tripId });
+
+        if (!trip) {
+            res.status(404);
+            throw new Error("Not Found");
+        }
+
+        if (!trip.host.equals(req.user._id)) {
+            res.status(403);
+            throw new Error("Forbidden");
+        }
+
+        props.forEach((prop) => trip[prop] = mods[prop]);
+        await trip.save();
+
+        res.status(200).send(trip);
+    } catch (error) {
+        console.log(error);
+        res.send(error);
+    }
 });
 
-// Delete Trip for an Excursion
-router.delete('/excursion/:id/trips/:id', async (req, res) => {
-    // WIP
+/**
+ *  Delete Trip By Id
+ *  [ docs link ]
+ */
+router.delete('/trip/:tripId', auth, async (req, res) => {
+    try {
+        const trip = await Trip.findById({ _id: req.params.tripId });
+        const user = await User.findById({ _id: req.user._id });
+
+        if (!trip.host.equals(user._id)) {
+            res.status(403);
+            throw new Error("Forbidden");
+        }
+
+        await Trip.deleteOne({ _id: trip._id });
+
+        await User.updateOne((
+            { _id: user._id },
+            { $pull: { hostedTrips: trip._id } }
+        ));
+
+        res.status(200).send(trip);
+    } catch (error) {
+        console.log(error);
+        res.send(error);
+    }
 });
 
 // ----------------------- //

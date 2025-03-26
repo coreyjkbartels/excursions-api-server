@@ -1,18 +1,17 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 
-
 const Schema = mongoose.Schema;
 
 const tripSchema = new Schema({
-    excursion: {
+    host: {
         type: Schema.Types.ObjectId,
-        ref: 'Excursion',
-        default: null,
+        ref: 'User',
+        required: true,
     },
     name: {
         type: String,
-        unique: true,
+        unique: false,
         required: true,
         trim: true,
         minLength: 1,
@@ -21,7 +20,7 @@ const tripSchema = new Schema({
     description: {
         type: String,
         unique: false,
-        required: false,
+        required: true,
         trim: true,
         minLength: 1,
         maxLength: 255,
@@ -45,30 +44,59 @@ const tripSchema = new Schema({
     campground: {
         id: {
             type: String,
-            unique: true,
-            required: false,
+            unique: false,
+            required: true,
             trim: true,
-            default: null,
+            validate(value) {
+                if (!validator.isUUID(value, 4)) {
+                    throw new Error("Id is not a valid UUID.");
+                }
+            }
         },
         name: {
             type: String,
             unique: false,
-            required: false,
+            required: true,
             trim: true,
-            default: null,
         },
     },
+    thingstodo: [{
+        id: {
+            type: String,
+            unique: false,
+            required: true,
+            trim: true,
+            validate(value) {
+                if (!validator.isUUID(value, 4)) {
+                    throw new Error("Id is not a valid UUID.");
+                }
+            }
+        },
+        title: {
+            type: String,
+            unique: false,
+            required: true,
+            trim: true,
+        },
+    }],
     startDate: {
         type: Date,
-        required: false,
+        required: true,
+        validate(value) {
+            if (!validator.isISO8601(value.toISOString())) {
+                throw new Error("Date is not in ISO8601 format.");
+            }
+        }
     },
     endDate: {
         type: Date,
-        required: false,
+        required: true,
+        validate(value) {
+            if (!validator.isISO8601(value.toISOString())) {
+                throw new Error("Date is not in ISO8601 format.");
+            }
+        }
     },
-    thingstodo: [{
-        // things-to-do id's --> only acquired from an NPS API call
-    }],
 },
     { timestamps: true });
 

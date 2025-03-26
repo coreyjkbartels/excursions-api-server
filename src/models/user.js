@@ -30,18 +30,21 @@ const userSchema = new Schema({
         required: true,
         trim: true,
         lowercase: true,
+        // validator for if isEmpty
     },
     lastName: {
         type: String,
         required: true,
         trim: true,
         lowercase: true,
+        // validator for if isEmpty
     },
     userName: {
         type: String,
         required: true,
         trim: true,
         lowercase: true
+        // validator for if isEmpty
     },
     avatar: {
         // TODO: Add profile picture
@@ -71,13 +74,18 @@ const userSchema = new Schema({
         default: null,
         // probably requires a validator to make sure the "isComplete" property on the Excursion is true
     }],
+    hostedTrips: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Trip',
+        default: null,
+        // probable requires a validator to make sure host matches this user id
+    }]
 });
 
 
-
 /**
- *  toJSON
- *  @returns JSON userObject
+ * 
+ * @returns 
  */
 userSchema.methods.toJSON = function () {
     const user = this;
