@@ -40,8 +40,15 @@ router.get("/user", auth, async (req, res) => {
  */
 router.patch('/user', auth, async (req, res) => {
     const mods = req.body;
+
+    if (mods.length === 0) {
+        res.status(400);
+        throw new Error("Bad Request");
+    }
+
     const props = Object.keys(mods);
     const modifiable = ['firstName', 'lastName', 'userName', 'password', 'email'];
+
     const isValid = props.every((prop) => modifiable.includes(prop));
 
     if (!isValid) {

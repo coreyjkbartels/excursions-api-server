@@ -12,6 +12,7 @@ const excursionSchema = new Schema({
         trim: true,
         minLength: 1,
         maxLength: 64,
+        // TODO: isEmpty validator
     },
     description: {
         type: String,
@@ -20,25 +21,48 @@ const excursionSchema = new Schema({
         trim: true,
         minLength: 1,
         maxLength: 255,
+        // TODO: isEmpty validator
     },
     host: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        default: null
+        required: true,
     },
     participants: [{
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        default: null
+        id: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: false,
+        },
+        userName: {
+            type: String,
+            unique: false,
+            required: true,
+            trim: true,
+            minLength: 1,
+            maxLength: 64,
+            // TODO: isEmpty validator
+        }
     }],
     trips: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Trip',
-        default: null,
+        id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Trip',
+            required: true,
+        },
+        name: {
+            type: String,
+            unique: false,
+            required: true,
+            trim: true,
+            minLength: 1,
+            maxLength: 64,
+            // TODO: isEmpty validator
+        }
     }],
     isComplete: {
         type: Boolean,
-        required: true,
+        required: false,
         default: false,
     },
 },
@@ -52,11 +76,7 @@ const excursionSchema = new Schema({
  *  @returns [{ excursion }]
  */
 excursionSchema.statics.findByUser = async (user) => {
-    const excursions = await Excursion.find({ creator: user });
-
-    if (excursions.length < 1) {
-        throw new Error('Unable to query documents');
-    }
+    const excursions = await Excursion.find({ host: user._id }).exec();
 
     return excursions;
 };
