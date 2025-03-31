@@ -16,8 +16,33 @@ const router = new express.Router();
  */
 router.post('/excursion', auth, async (req, res) => {
     try {
-        const excursion = new Excursion(req.body);
+        const { name, description, trips } = req.body;
+
+        /**
+         *  Sort trips by start dates
+         *  Check if start-end dates overlap by more than 1 day
+         *  If overlap, throw an error and return the newly created all trip objects (including newly created).
+         *  If no overlap, proceed
+         */
+
+        const data = {
+            "name": name,
+            "description": description,
+            "trips": trips,
+            "host": req.user._id,
+        };
+
+        const excursion = new Excursion(data);
         await excursion.save();
+
+        /**
+         *  Create Pipeline
+         *  1. Get Trip objects
+         *  2. Get Host User object
+         *  3. Get Participant User objects
+         *  4. Create new object (i.e., returnExcursion)
+         *  5. Append data & return new object to Client
+         */
 
         res.status(201).send({ excursion });
     } catch (error) {
@@ -149,6 +174,11 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
 // ---------------------------- //
 // #endregion                   //
 // ---------------------------- //
+
+// aggregate return on trips includes
+// 1 call using park id to get parkCode
+// 1 call to get all campgrounds for that parkCode
+// 1 call to get all things to do with that parkCode
 
 // ----------------------- //
 // #region Trip Management //
@@ -307,5 +337,12 @@ router.delete('/trip/:tripId', auth, async (req, res) => {
 // #endregion              //
 // ----------------------- //
 
+// -------------------------- //
+// #region Sharing Excursions //
+// -------------------------- //
+
+// -------------------------- //
+// #endregion                 //
+// -------------------------- //
 
 module.exports = router;

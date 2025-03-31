@@ -126,6 +126,79 @@ router.get('/national-parks/summary', auth, async (req, res) => {
 });
 
 /**
+ *  Get National Park Codes
+ *  []
+ */
+router.get('/national-parks/codes', auth, async (req, res) => {
+    try {
+        const endpoint = 'parks';
+        let url = `${NPS_API_URL}/${endpoint}`;
+
+        const options = {};
+        let query = `?limit=500&api_key=${NPS_API_KEY}`;
+
+        url += query;
+
+        let response = await fetch(url, options);
+
+        if (response.ok) {
+            if (response.status === 200) {
+                const data = await response.json();
+                const parks = data.data;
+
+                let parkCodes = [];
+                let stateCodes = [];
+
+                parks.forEach(park => {
+                    let { parkCode, states } = park;
+
+                    if (!parkCodes.includes(parkCode)) {
+                        parkCodes.push(parkCode);
+                    }
+
+                    let statesArray = states.split(',');
+
+                    statesArray.forEach(state => {
+                        if (!stateCodes.includes(state)) {
+                            stateCodes.push(state);
+                        }
+                    });
+                });
+
+                parkCodes.sort();
+                stateCodes.sort();
+
+                const codes = {
+                    "parks": {
+                        "total": parkCodes.length,
+                        "codes": parkCodes,
+                    },
+                    "states": {
+                        "total": stateCodes.length,
+                        "codes": stateCodes,
+                    }
+                };
+
+                res.status(200).send(codes);
+            }
+        } else {
+            if (response.status === 400) {
+                res.status(400);
+                throw new Error("Bad Request");
+            }
+
+            if (response.status === 401) {
+                res.status(500);
+                throw new Error("Internal Server Error");
+            }
+        }
+
+    } catch (error) {
+        res.send(error);
+    }
+});
+
+/**
  *  Get Campgrounds
  *  https://will-german.github.io/excursions-api-docs/#tag/Park-Details/operation/get-campgrounds
  */

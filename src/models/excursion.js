@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 
-
 const Schema = mongoose.Schema;
 
 const excursionSchema = new Schema({
@@ -26,39 +25,20 @@ const excursionSchema = new Schema({
     host: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        required: false,
+        // validate bson
     },
     participants: [{
-        id: {
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-            required: false,
-        },
-        userName: {
-            type: String,
-            unique: false,
-            required: true,
-            trim: true,
-            minLength: 1,
-            maxLength: 64,
-            // TODO: isEmpty validator
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: false,
+        // validate bson
     }],
     trips: [{
-        id: {
-            type: Schema.Types.ObjectId,
-            ref: 'Trip',
-            required: true,
-        },
-        name: {
-            type: String,
-            unique: false,
-            required: true,
-            trim: true,
-            minLength: 1,
-            maxLength: 64,
-            // TODO: isEmpty validator
-        }
+        type: Schema.Types.ObjectId,
+        ref: 'Trip',
+        required: false,
+        // validate bson
     }],
     isComplete: {
         type: Boolean,
