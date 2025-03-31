@@ -6,6 +6,27 @@ const jwt = require('jsonwebtoken');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
+    userName: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true
+        // validator for if isEmpty
+    },
+    firstName: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+        // validator for if isEmpty
+    },
+    lastName: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+        // validator for if isEmpty
+    },
     email: {
         type: String,
         unique: true,
@@ -25,37 +46,26 @@ const userSchema = new Schema({
         minLength: 8,
         // use "match" property for RegEx to check against
     },
-    firstName: {
-        type: String,
-        required: true,
-        trim: true,
-        lowercase: true,
-        // validator for if isEmpty
-    },
-    lastName: {
-        type: String,
-        required: true,
-        trim: true,
-        lowercase: true,
-        // validator for if isEmpty
-    },
-    userName: {
-        type: String,
-        required: true,
-        trim: true,
-        lowercase: true
-        // validator for if isEmpty
-    },
     avatar: {
-        // TODO: Add profile picture
+        // TODO: Add profile picture --> return predefined list of images?
         // type: Buffer (?)
     },
-    tokens: [{
-        token: {
-            type: String,
-            required: false
-        }
+    friends: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: false,
     }],
+    // # CHANGE THIS TO FRIEND REQUESTS IDS
+    // incomingFriendRequests: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'User',
+    //     required: false,
+    // }],
+    // outgoingFriendRequests: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'User',
+    //     required: false,
+    // }],
     hostedExcursions: [{
         type: Schema.Types.ObjectId,
         ref: 'Excursion',
@@ -74,12 +84,29 @@ const userSchema = new Schema({
         default: null,
         // probably requires a validator to make sure the "isComplete" property on the Excursion is true
     }],
-    hostedTrips: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Trip',
-        default: null,
-        // probable requires a validator to make sure host matches this user id
-    }]
+    // # CHANGE THIS TO EXCURSION INVITE IDS
+    // incomingExcursionInvites: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'User',
+    //     required: false,
+    // }],
+    // outgoingExcursionInvites: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'User',
+    //     required: false,
+    // }],
+    // hostedTrips: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'Trip',
+    //     default: null,
+    //     // probable requires a validator to make sure host matches this user id
+    // }],
+    tokens: [{
+        token: {
+            type: String,
+            required: false
+        }
+    }],
 });
 
 

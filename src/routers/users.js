@@ -81,6 +81,22 @@ router.delete('/user', auth, async (req, res) => {
 });
 
 /**
+ *  Get Users
+ *  []
+ */
+router.get('/users', auth, async (req, res) => {
+    // limit, start, q (formerly keywords)
+
+    // read in query params from the req
+
+    // fetch the objects from {start} to {start+limit} that contain the {keywords} in any of the "public" properties (i.e., NOT PASSWORD)
+
+    // for each object returned append it to an array
+
+    // return the array of objects to the client
+});
+
+/**
  *  Get User By Id
  *  https://will-german.github.io/excursions-api-docs/#tag/User-Management/operation/get-user-by-id
  */
@@ -93,6 +109,8 @@ router.get('/user/:userId', auth, async (req, res) => {
             res.status(404);
             throw new Error("Not Found");
         }
+
+        // TODO: Remove sensitive data properties.
 
         res.status(200).send(user);
     } catch (error) {
@@ -143,5 +161,20 @@ router.post("/user/sign-out", auth, async (req, res) => {
 // --------------------------- //
 // #endregion                  //
 // --------------------------- //
+
+// -------------------------- //
+// #region User Customization //
+// -------------------------- //
+
+// Get Avatars
+router.get('/user/avatars', auth, async (req, res) => {
+    // get a complete list of avatars from the database
+    // append each returned object to an array
+    // return the array to the client
+});
+
+// -------------------------- //
+// #endregion                 //
+// -------------------------- //
 
 module.exports = router;

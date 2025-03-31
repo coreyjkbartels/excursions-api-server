@@ -26,58 +26,37 @@ const tripSchema = new Schema({
         maxLength: 255,
     },
     park: {
-        name: {
-            type: String,
-            unique: false,
-            required: true,
-            trim: true,
-        },
-        code: {
-            type: String,
-            unique: false,
-            required: true,
-            trim: true,
-            minLength: 4,
-            maxLength: 10,
-        },
+        type: String,
+        unique: false,
+        required: false,
+        trim: true,
+        validate(value) {
+            if (!validator.isUUID(value, 4)) {
+                throw new Error("Id is not a valid UUID.");
+            }
+        }
     },
     campground: {
-        id: {
-            type: String,
-            unique: false,
-            required: true,
-            trim: true,
-            validate(value) {
-                if (!validator.isUUID(value, 4)) {
-                    throw new Error("Id is not a valid UUID.");
-                }
+        type: String,
+        unique: false,
+        required: false,
+        trim: true,
+        validate(value) {
+            if (!validator.isUUID(value, 4)) {
+                throw new Error("Id is not a valid UUID.");
             }
-        },
-        name: {
-            type: String,
-            unique: false,
-            required: true,
-            trim: true,
-        },
+        }
     },
     thingstodo: [{
-        id: {
-            type: String,
-            unique: false,
-            required: true,
-            trim: true,
-            validate(value) {
-                if (!validator.isUUID(value, 4)) {
-                    throw new Error("Id is not a valid UUID.");
-                }
+        type: String,
+        unique: false,
+        required: false,
+        trim: true,
+        validate(value) {
+            if (!validator.isUUID(value, 4)) {
+                throw new Error("Id is not a valid UUID.");
             }
-        },
-        title: {
-            type: String,
-            unique: false,
-            required: true,
-            trim: true,
-        },
+        }
     }],
     startDate: {
         type: Date,
