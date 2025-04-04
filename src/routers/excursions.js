@@ -15,6 +15,7 @@ const router = new express.Router();
  *  [ docs link ]
  */
 router.post('/excursion', auth, async (req, res) => {
+
     try {
         const { name, description, trips } = req.body;
 
@@ -44,7 +45,71 @@ router.post('/excursion', auth, async (req, res) => {
          *  5. Append data & return new object to Client
          */
 
-        res.status(201).send({ excursion });
+        const hostObject = await User.findPublicUser(excursion.host._id);
+
+        if (!hostObject) {
+            res.status(404);
+            throw new Error("Not Found");
+        }
+
+        // $match
+        // { _id: { $in: excursion.trips } }
+        const tripObjects = await Trip.find({ _id: { $in: excursion.trips } });
+
+        console.log(tripObjects);
+
+        const returnExcursion = {
+            host: hostObject,
+            trips: tripObjects,
+            // participants: {},
+        };
+
+        /**
+         *  1. Get the Trip objects
+         * 
+         *  Go into the Trips collection
+         *  Match the _id of the Trip to the
+         *  one of the _id's in the Excursion's 
+         *  trips array.
+         * 
+         *  Output this in a new array containing
+         *  the resulting documents.
+         */
+
+        /**
+         *  2. Get the Host User object for this Excursion.
+         * 
+         *  Go into the Users collection
+         *  Match the _id of the User to the
+         *  Excursion's host field.
+         * 
+         *  Output this in a new array containing
+         *  the resulting documents.
+         */
+
+        // {
+        //     from: "users",
+        //     foreignField: "_id",
+        //     localField: "host",
+        //     as: "host"
+        // }
+
+        /**
+         *  3. Get the Participants objects for this Excursion.
+         * 
+         *  Go into the Users collection
+         *  Match the _id of the Participant to the
+         *  one of the _id's in the Excursion's 
+         *  participants array.
+         * 
+         *  Output this in a new array containing
+         *  the resulting documents.
+         */
+
+
+
+
+        res.status(201).send({ returnExcursion });
     } catch (error) {
         console.log(error);
         res.status(400).send({ error: 'Bad Request' });
@@ -190,7 +255,13 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
  */
 router.post('/trip', auth, async (req, res) => {
     try {
-        const trip = new Trip(req.body);
+
+        const data = {
+            ...req.body,
+            "host": req.user._id
+        };
+
+        const trip = new Trip(data);
         await trip.save();
 
         if (!trip._id) {
