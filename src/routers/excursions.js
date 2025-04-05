@@ -3,6 +3,7 @@ const Excursion = require('../models/excursion');
 const Trip = require('../models/trip');
 const User = require('../models/user');
 const auth = require('../middleware/auth');
+const mongoose = require('mongoose')
 
 const router = new express.Router();
 
@@ -17,102 +18,23 @@ const router = new express.Router();
 router.post('/excursion', auth, async (req, res) => {
 
     try {
-        const { name, description, trips } = req.body;
+        req.body.host = req.user._id
 
-        /**
-         *  Sort trips by start dates
-         *  Check if start-end dates overlap by more than 1 day
-         *  If overlap, throw an error and return the newly created all trip objects (including newly created).
-         *  If no overlap, proceed
-         */
-
-        const data = {
-            "name": name,
-            "description": description,
-            "trips": trips,
-            "host": req.user._id,
-        };
-
-        const excursion = new Excursion(data);
+        const excursion = new Excursion(req.body);
         await excursion.save();
 
-        /**
-         *  Create Pipeline
-         *  1. Get Trip objects
-         *  2. Get Host User object
-         *  3. Get Participant User objects
-         *  4. Create new object (i.e., returnExcursion)
-         *  5. Append data & return new object to Client
-         */
-
-        const hostObject = await User.findPublicUser(excursion.host._id);
-
-        if (!hostObject) {
-            res.status(404);
-            throw new Error("Not Found");
+        const trips = []
+        for (let id of req.body.trips) {
+            const trip = await Trip.findById(id)
+            trips.push(trip)
         }
 
-        // $match
-        // { _id: { $in: excursion.trips } }
-        const tripObjects = await Trip.find({ _id: { $in: excursion.trips } });
+        excursion.trips = trips
 
-        console.log(tripObjects);
-
-        const returnExcursion = {
-            host: hostObject,
-            trips: tripObjects,
-            // participants: {},
-        };
-
-        /**
-         *  1. Get the Trip objects
-         * 
-         *  Go into the Trips collection
-         *  Match the _id of the Trip to the
-         *  one of the _id's in the Excursion's 
-         *  trips array.
-         * 
-         *  Output this in a new array containing
-         *  the resulting documents.
-         */
-
-        /**
-         *  2. Get the Host User object for this Excursion.
-         * 
-         *  Go into the Users collection
-         *  Match the _id of the User to the
-         *  Excursion's host field.
-         * 
-         *  Output this in a new array containing
-         *  the resulting documents.
-         */
-
-        // {
-        //     from: "users",
-        //     foreignField: "_id",
-        //     localField: "host",
-        //     as: "host"
-        // }
-
-        /**
-         *  3. Get the Participants objects for this Excursion.
-         * 
-         *  Go into the Users collection
-         *  Match the _id of the Participant to the
-         *  one of the _id's in the Excursion's 
-         *  participants array.
-         * 
-         *  Output this in a new array containing
-         *  the resulting documents.
-         */
-
-
-
-
-        res.status(201).send({ returnExcursion });
+        res.status(201).send({ excursion });
     } catch (error) {
         console.log(error);
-        res.status(400).send({ error: 'Bad Request' });
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -122,24 +44,37 @@ router.post('/excursion', auth, async (req, res) => {
  */
 router.get('/excursions', auth, async (req, res) => {
     try {
-        const user = req.user;
+        const filter = { host: req.user._id }
 
-        if (!user) {
-            res.status(404);
-            throw new Error('Not Found');
-        }
+        const pipeline = Excursion.aggregate([
+            { $match: filter },
+            {
+                $lookup: {
+                    from: "trips",
+                    foreignField: '_id',
+                    localField: "trips",
+                    as: "trips"
+                }
+            },
+            {
+                $project: {
+                    "name": 1,
+                    "description": 1,
 
-        const excursions = await Excursion.findByUser(user);
+                    "trips._id": 1,
+                    "trips.name": 1,
+                    "trips.description": 1
+                }
+            }
+        ])
 
-        if (excursions.length < 1) {
-            res.status(404);
-            throw new Error('Not Found');
-        }
+        const excursions = await pipeline.exec()
 
         res.status(200).send({ excursions });
+
     } catch (error) {
         console.log(error);
-        res.send(error);
+        res.status(500).send(error);
     }
 });
 
@@ -152,14 +87,24 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
         const excursion = await Excursion.findById(req.params.excursionId);
 
         if (!excursion) {
-            res.status(404);
-            throw new Error("Not Found");
+            res.status(400).send({ Error: "Invalid excursion id" });
+            return
         }
+
+        // TODO: check make sure req.user is host or participant
+
+        const trips = []
+        for (let id of excursion.trips) {
+            const trip = await Trip.findById(id)
+            trips.push(trip)
+        }
+
+        excursion.trips = trips
 
         res.status(200).send({ excursion });
     } catch (error) {
         console.log(error);
-        res.send(error);
+        res.status(500).send(error);
     }
 });
 
@@ -171,8 +116,8 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
     const mods = req.body;
 
     if (mods.length === 0) {
-        res.status(400);
-        throw new Error("Bad Request");
+        res.status(400).send({ Error: "Missing updates" });
+        return
     }
 
     const props = Object.keys(mods);
@@ -185,26 +130,33 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
     }
 
     try {
-        const excursionId = req.params.excursionId;
-        const excursion = await Excursion.findById({ _id: excursionId });
+        const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
         if (!excursion) {
-            res.status(404);
-            throw new Error("Not Found");
+            res.status(400).send({ Error: 'Invalid excursion id'});
+            return
         }
 
         if (!excursion.host.equals(req.user._id)) {
-            res.status(403);
-            throw new Error("Forbidden");
+            res.status(403).send({ Error: "Forbidden"});
+            return
         }
 
         props.forEach((prop) => excursion[prop] = mods[prop]);
         await excursion.save();
 
+        const trips = []
+        for (let id of excursion.trips) {
+            const trip = await Trip.findById(id)
+            trips.push(trip)
+        }
+
+        excursion.trips = trips
+
         res.status(200).send({ excursion });
     } catch (error) {
         console.log(error);
-        res.send(error);
+        res.status(500).send(error);
     }
 });
 
@@ -214,25 +166,24 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
  */
 router.delete('/excursion/:excursionId', auth, async (req, res) => {
     try {
-        const excursion = Excursion.findById({ _id: req.params.excursionId });
-        const user = await User.findById({ _id: req.user._id });
-
-        if (!excursion.host.equals(user._id)) {
-            res.status(403);
-            throw new Error("Forbidden");
+        if (!mongoose.isValidObjectId(req.params.excursionId)) {
+            res.status(400).send({ Error: "Invalid excursion id" })
+            return
         }
 
-        await Excursion.deleteOne({ _id: req.params.id });
+        // TODO: pull from participant's excursions list
 
         await User.updateOne((
-            { _id: user._id },
-            { $pull: { hostedExcursions: excursion._id } }
+            { _id: req.user._id },
+            { $pull: { hostedExcursions: req.params.excursionId } }
         ));
 
-        res.status(200).send(excursion);
+        await Excursion.deleteOne({ _id: req.params.excursionId });
+
+        res.status(200).send();
     } catch (error) {
         console.log(error);
-        res.send(error);
+        res.status(500).send(error);
     }
 });
 
@@ -240,10 +191,6 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
 // #endregion                   //
 // ---------------------------- //
 
-// aggregate return on trips includes
-// 1 call using park id to get parkCode
-// 1 call to get all campgrounds for that parkCode
-// 1 call to get all things to do with that parkCode
 
 // ----------------------- //
 // #region Trip Management //
@@ -255,7 +202,6 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
  */
 router.post('/trip', auth, async (req, res) => {
     try {
-
         const data = {
             ...req.body,
             "host": req.user._id
@@ -264,20 +210,15 @@ router.post('/trip', auth, async (req, res) => {
         const trip = new Trip(data);
         await trip.save();
 
-        if (!trip._id) {
-            res.status(500);
-            throw new Error("Internal Server Error");
-        }
-
         await User.updateOne((
-            { _id: req.body.host },
+            { _id: req.body._id },
             { $push: { hostedTrips: trip._id } }
         ));
 
         res.status(201).send({ trip });
     } catch (error) {
         console.log(error);
-        res.send(error);
+        res.status(400).send({ Error: 'Bad request'});
     }
 });
 
@@ -287,17 +228,17 @@ router.post('/trip', auth, async (req, res) => {
  */
 router.get('/trip/:tripId', auth, async (req, res) => {
     try {
-        const tripId = req.params.tripId;
-        const trip = await Trip.findById({ _id: tripId });
+        const trip = await Trip.findById({ _id: req.params.tripId });
 
         if (!trip) {
-            res.status(404);
-            throw new Error("Not Found");
+            res.status(400).send({ Error: "Invalid trip id" });
+            return
         }
 
         res.status(200).send(trip);
     } catch (error) {
-        res.send(error);
+        console.log(error)
+        res.status(500).send(error);
     }
 });
 
@@ -305,28 +246,13 @@ router.get('/trip/:tripId', auth, async (req, res) => {
  *  Get Trip By User Id
  *  [ docs link ]
  */
-router.get('/trips/:userId', auth, async (req, res) => {
+router.get('/trips', auth, async (req, res) => {
     try {
-        const userId = req.params.userId;
-
-        const user = await User.findById({ _id: userId });
-
-        if (!user) {
-            res.status(404);
-            throw new Error("User Not Found");
-        }
-
-        const trips = await Trip.findByUser(user);
-
-        if (trips.length < 1) {
-            res.status(404);
-            throw new Error("Not Found");
-        }
-
+        const trips = await Trip.findByUser(req.user._id);
         res.status(200).send(trips);
     } catch (error) {
         console.log(error);
-        res.send(error);
+        res.status(500).send(error);
     }
 });
 
@@ -338,8 +264,8 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
     const mods = req.body;
 
     if (mods.length === 0) {
-        res.status(400);
-        throw new Error("Bad Request");
+        res.status(400).send({ Error: 'Missing updates' })
+        return
     }
 
     const props = Object.keys(mods);
@@ -348,21 +274,21 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
     const isValid = props.every((prop) => modifiable.includes(prop));
 
     if (!isValid) {
-        return res.status(400).send({ Error: 'Invalid Updates.' });
+        res.status(400).send({ Error: 'Invalid Updates.' });
+        return 
     }
 
     try {
-        const tripId = req.params.tripId;
-        const trip = await Trip.findById({ _id: tripId });
+        const trip = await Trip.findById({ _id: req.params.tripId });
 
         if (!trip) {
-            res.status(404);
-            throw new Error("Not Found");
+            res.status(404).send({ Error: 'Invalid trip id'});
+            return
         }
 
         if (!trip.host.equals(req.user._id)) {
-            res.status(403);
-            throw new Error("Forbidden");
+            res.status(403).send({ Error: 'Forbidden'})
+            return
         }
 
         props.forEach((prop) => trip[prop] = mods[prop]);
@@ -371,7 +297,7 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
         res.status(200).send(trip);
     } catch (error) {
         console.log(error);
-        res.send(error);
+        res.status(500).send(error);
     }
 });
 
@@ -381,26 +307,32 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
  */
 router.delete('/trip/:tripId', auth, async (req, res) => {
     try {
-        const trip = await Trip.findById({ _id: req.params.tripId });
-        // could replace below with "req.user._id"
-        const user = await User.findById({ _id: req.user._id });
 
-        if (!trip.host.equals(user._id)) {
-            res.status(403);
-            throw new Error("Forbidden");
+        const trip = await Trip.findById({ _id: req.params.tripId });
+
+        if (!trip.host.equals(req.user._id)) {
+            res.status(403).send({ Error: 'Forbidden'});
+            return
         }
 
-        await Trip.deleteOne({ _id: trip._id });
+        await Trip.deleteOne({ _id: req.params.tripId });
 
         await User.updateOne((
-            { _id: user._id },
-            { $pull: { hostedTrips: trip._id } }
+            { _id: req.user._id },
+            { $pull: { hostedTrips: req.params.tripId } }
         ));
 
-        res.status(200).send(trip);
+        // TODO: delete trip from all excursions
+
+        await Excursion.updateMany(
+            { host: req.user._id },
+            { $pull: { trips: { _id: req.params.tripId }}}
+        )
+
+        res.status(200).send();
     } catch (error) {
         console.log(error);
-        res.send(error);
+        res.status(500).send(error);
     }
 });
 

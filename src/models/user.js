@@ -95,12 +95,11 @@ const userSchema = new Schema({
     //     ref: 'User',
     //     required: false,
     // }],
-    // hostedTrips: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'Trip',
-    //     default: null,
-    //     // probable requires a validator to make sure host matches this user id
-    // }],
+    hostedTrips: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Trip',
+        default: null,
+    }],
     tokens: [{
         token: {
             type: String,
