@@ -3,7 +3,7 @@ const Excursion = require('../models/excursion');
 const Trip = require('../models/trip');
 const User = require('../models/user');
 const auth = require('../middleware/auth');
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const router = new express.Router();
 
@@ -16,20 +16,21 @@ const router = new express.Router();
  *  [ docs link ]
  */
 router.post('/excursion', auth, async (req, res) => {
-
     try {
-        req.body.host = req.user._id
+        req.body.host = req.user._id;
 
         const excursion = new Excursion(req.body);
         await excursion.save();
 
-        const trips = []
+        // TODO: Get Host User Object
+
+        const trips = [];
         for (let id of req.body.trips) {
-            const trip = await Trip.findById(id)
-            trips.push(trip)
+            const trip = await Trip.findById(id);
+            trips.push(trip);
         }
 
-        excursion.trips = trips
+        excursion.trips = trips;
 
         res.status(201).send({ excursion });
     } catch (error) {
@@ -43,8 +44,11 @@ router.post('/excursion', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.get('/excursions', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     try {
-        const filter = { host: req.user._id }
+        const filter = { host: req.user._id };
 
         const pipeline = Excursion.aggregate([
             { $match: filter },
@@ -66,9 +70,9 @@ router.get('/excursions', auth, async (req, res) => {
                     "trips.description": 1
                 }
             }
-        ])
+        ]);
 
-        const excursions = await pipeline.exec()
+        const excursions = await pipeline.exec();
 
         res.status(200).send({ excursions });
 
@@ -83,23 +87,26 @@ router.get('/excursions', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.get('/excursion/:excursionId', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     try {
         const excursion = await Excursion.findById(req.params.excursionId);
 
         if (!excursion) {
             res.status(400).send({ Error: "Invalid excursion id" });
-            return
+            return;
         }
 
         // TODO: check make sure req.user is host or participant
 
-        const trips = []
+        const trips = [];
         for (let id of excursion.trips) {
-            const trip = await Trip.findById(id)
-            trips.push(trip)
+            const trip = await Trip.findById(id);
+            trips.push(trip);
         }
 
-        excursion.trips = trips
+        excursion.trips = trips;
 
         res.status(200).send({ excursion });
     } catch (error) {
@@ -113,11 +120,14 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.patch('/excursion/:excursionId', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     const mods = req.body;
 
     if (mods.length === 0) {
         res.status(400).send({ Error: "Missing updates" });
-        return
+        return;
     }
 
     const props = Object.keys(mods);
@@ -133,25 +143,25 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
         const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
         if (!excursion) {
-            res.status(400).send({ Error: 'Invalid excursion id'});
-            return
+            res.status(400).send({ Error: 'Invalid excursion id' });
+            return;
         }
 
         if (!excursion.host.equals(req.user._id)) {
-            res.status(403).send({ Error: "Forbidden"});
-            return
+            res.status(403).send({ Error: "Forbidden" });
+            return;
         }
 
         props.forEach((prop) => excursion[prop] = mods[prop]);
         await excursion.save();
 
-        const trips = []
+        const trips = [];
         for (let id of excursion.trips) {
-            const trip = await Trip.findById(id)
-            trips.push(trip)
+            const trip = await Trip.findById(id);
+            trips.push(trip);
         }
 
-        excursion.trips = trips
+        excursion.trips = trips;
 
         res.status(200).send({ excursion });
     } catch (error) {
@@ -165,10 +175,13 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.delete('/excursion/:excursionId', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     try {
         if (!mongoose.isValidObjectId(req.params.excursionId)) {
-            res.status(400).send({ Error: "Invalid excursion id" })
-            return
+            res.status(400).send({ Error: "Invalid excursion id" });
+            return;
         }
 
         // TODO: pull from participant's excursions list
@@ -201,6 +214,9 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.post('/trip', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     try {
         const data = {
             ...req.body,
@@ -218,7 +234,7 @@ router.post('/trip', auth, async (req, res) => {
         res.status(201).send({ trip });
     } catch (error) {
         console.log(error);
-        res.status(400).send({ Error: 'Bad request'});
+        res.status(400).send({ Error: 'Bad request' });
     }
 });
 
@@ -227,17 +243,20 @@ router.post('/trip', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.get('/trip/:tripId', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     try {
         const trip = await Trip.findById({ _id: req.params.tripId });
 
         if (!trip) {
             res.status(400).send({ Error: "Invalid trip id" });
-            return
+            return;
         }
 
         res.status(200).send(trip);
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).send(error);
     }
 });
@@ -247,6 +266,9 @@ router.get('/trip/:tripId', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.get('/trips', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     try {
         const trips = await Trip.findByUser(req.user._id);
         res.status(200).send(trips);
@@ -261,11 +283,14 @@ router.get('/trips', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.patch('/trip/:tripId', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     const mods = req.body;
 
     if (mods.length === 0) {
-        res.status(400).send({ Error: 'Missing updates' })
-        return
+        res.status(400).send({ Error: 'Missing updates' });
+        return;
     }
 
     const props = Object.keys(mods);
@@ -275,20 +300,20 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
 
     if (!isValid) {
         res.status(400).send({ Error: 'Invalid Updates.' });
-        return 
+        return;
     }
 
     try {
         const trip = await Trip.findById({ _id: req.params.tripId });
 
         if (!trip) {
-            res.status(404).send({ Error: 'Invalid trip id'});
-            return
+            res.status(404).send({ Error: 'Invalid trip id' });
+            return;
         }
 
         if (!trip.host.equals(req.user._id)) {
-            res.status(403).send({ Error: 'Forbidden'})
-            return
+            res.status(403).send({ Error: 'Forbidden' });
+            return;
         }
 
         props.forEach((prop) => trip[prop] = mods[prop]);
@@ -306,13 +331,16 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
  *  [ docs link ]
  */
 router.delete('/trip/:tripId', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
     try {
 
         const trip = await Trip.findById({ _id: req.params.tripId });
 
         if (!trip.host.equals(req.user._id)) {
-            res.status(403).send({ Error: 'Forbidden'});
-            return
+            res.status(403).send({ Error: 'Forbidden' });
+            return;
         }
 
         await Trip.deleteOne({ _id: req.params.tripId });
@@ -326,8 +354,8 @@ router.delete('/trip/:tripId', auth, async (req, res) => {
 
         await Excursion.updateMany(
             { host: req.user._id },
-            { $pull: { trips: { _id: req.params.tripId }}}
-        )
+            { $pull: { trips: { _id: req.params.tripId } } }
+        );
 
         res.status(200).send();
     } catch (error) {
