@@ -95,12 +95,11 @@ const userSchema = new Schema({
     //     ref: 'User',
     //     required: false,
     // }],
-    // hostedTrips: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'Trip',
-    //     default: null,
-    //     // probable requires a validator to make sure host matches this user id
-    // }],
+    hostedTrips: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Trip',
+        default: null,
+    }],
     tokens: [{
         token: {
             type: String,
@@ -166,6 +165,26 @@ userSchema.statics.findByCredentials = async (email, password) => {
     return user;
 };
 
+/**
+ *  findPublicUser
+ *  @returns object user
+ */
+userSchema.statics.findPublicUser = async function (id) {
+    // .lean() returns a JS object, not a mongoose object.
+    const user = await User.findById(id).lean();
+
+    if (user) {
+        delete user.password;
+        delete user.friends;
+        delete user.hostedExcursions;
+        delete user.sharedExcursions;
+        delete user.completedExcursions;
+        delete user.hostedTrips;
+        delete user.tokens;
+    }
+
+    return user;
+};
 
 /**
  * 
