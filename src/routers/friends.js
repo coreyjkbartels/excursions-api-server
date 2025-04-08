@@ -20,6 +20,7 @@ router.post('/friends/requests', auth, async (req, res) => {
 
         if (!friend) {
             res.status(400).send({ Error: 'Bad Request' });
+            return;
         }
 
         const data = {
@@ -52,9 +53,9 @@ router.post('/friends/requests', auth, async (req, res) => {
  */
 router.get('/friends/requests', auth, async (req, res) => {
     try {
-        const friendRequests = await FriendRequest.findByUser(req.user._id); // --> function not written as of yet
+        const friendRequests = await FriendRequest.findByUser(req.user._id);
 
-        // ==> grab user objects for sender/receiver and send public version of those instead of ids
+        // TODO: Return "sender" and "receiver" as User objects instead of as ids. => Pipeline?
 
         res.status(200).send(friendRequests);
     } catch (error) {
@@ -69,7 +70,15 @@ router.get('/friends/requests', auth, async (req, res) => {
  */
 router.patch('/friends/requests/:requestId', auth, async (req, res) => {
     try {
-        // ...
+
+        const mods = req.body;
+
+        if (mods.length === 0) {
+            res.status(400).send({ Error: "Missing updates" });
+            return;
+        }
+
+        const friendRequest = FriendRequest.findById(req.params.requestId);
 
         // ==> if it is declined remove it from the list for both users?
     } catch (error) {
@@ -88,10 +97,12 @@ router.delete('/friends/requests/:requestId', auth, async (req, res) => {
 
         if (!friendRequest) {
             res.status(400).send({ Error: 'Bad Request' });
+            return;
         }
 
         if (friendRequest.sender != req.user._id) {
             res.status(400).send({ Error: 'Unauthorized' });
+            return;
         }
 
         await FriendRequest.deleteOne({ _id: req.params.requestId });

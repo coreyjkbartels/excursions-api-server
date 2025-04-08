@@ -28,13 +28,14 @@ const friendRequestSchema = new Schema({
  *  @returns excursionInvites {}
  */
 friendRequestSchema.statics.findByUser = async (user) => {
-    const friendRequests = {
-        "incoming": [],
-        "outgoing": [],
-    };
+    const incomingRequests = await FriendRequest.find({ receiver: user._id }).exec();
 
-    // get incoming, push to array
-    // get outgoing, push to array
+    const outgoingRequests = await FriendRequest.find({ sender: user._id }).exec();
+
+    const friendRequests = {
+        "incoming": incomingRequests,
+        "outgoing": outgoingRequests,
+    };
 
     return friendRequests;
 };
