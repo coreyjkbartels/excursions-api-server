@@ -24,13 +24,15 @@ router.post('/excursion', auth, async (req, res) => {
 
         // TODO: Get Host User Object
 
-        const trips = [];
-        for (let id of req.body.trips) {
-            const trip = await Trip.findById(id);
-            trips.push(trip);
-        }
+        if (req.body.trips) {
+            const trips = [];
+            for (let id of req.body.trips) {
+                const trip = await Trip.findById(id);
+                trips.push(trip);
+            }
 
-        excursion.trips = trips;
+            excursion.trips = trips;
+        }
 
         res.status(201).send({ excursion });
     } catch (error) {
