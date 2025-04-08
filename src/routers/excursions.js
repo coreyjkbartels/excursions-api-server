@@ -465,23 +465,23 @@ router.patch('/share/excursions/:inviteId', auth, async (req, res) => {
             return;
         }
 
-        // if (excursionInvite.receiver !== req.user._id) {
-        //     res.status(403).send({ Error: "Forbidden" });
-        //     return;
-        // }
+        if (excursionInvite.receiver !== req.user._id) {
+            res.status(403).send({ Error: "Forbidden" });
+            return;
+        }
 
         props.forEach((prop) => excursionInvite[prop] = mods[prop]);
         await excursionInvite.save();
 
         if (req.body.isAccepted) {
             await Excursion.updateOne((
-                { _id: req.params.inviteId },
+                { _id: excursionInvite.excursion },
                 { $push: { participants: req.user._id } }
             ));
 
             await User.updateOne((
                 { _id: req.user._id },
-                { $push: { sharedExcursions: req.params.inviteId } }
+                { $push: { sharedExcursions: excursionInvite.excursion } }
             ));
         }
 
@@ -497,9 +497,7 @@ router.patch('/share/excursions/:inviteId', auth, async (req, res) => {
 
         await ExcursionInvite.deleteOne({ _id: excursionInvite._id });
 
-        // TODO: Get user objects and replace the sender/receiver ids with public profiles
-
-        res.status(200).send(excursionInvite);
+        res.status(200).send();
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -519,10 +517,10 @@ router.delete('/share/excursions/:inviteId', auth, async (req, res) => {
             return;
         }
 
-        // if (excursionInvite.sender !== req.user._id) {
-        //     res.status(403).send({ Error: 'Forbidden' });
-        //     return;
-        // }
+        if (excursionInvite.sender !== req.user._id) {
+            res.status(403).send({ Error: 'Forbidden' });
+            return;
+        }
 
         await User.updateOne((
             { _id: excursionInvite.sender },
@@ -534,11 +532,9 @@ router.delete('/share/excursions/:inviteId', auth, async (req, res) => {
             { $pull: { incomingExcursionInvites: req.params.inviteId } }
         ));
 
-        // TODO: Get user objects and replace the sender/receiver ids with public profiles
-
         await excursionInvite.deleteOne({ _id: req.params.inviteId });
 
-        res.status(200).send(excursionInvite);
+        res.status(200).send();
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -558,7 +554,7 @@ router.delete('/share/excursions/:inviteId', auth, async (req, res) => {
  *  Leave Excursion By Id
  * 
  */
-router.delete('/leave/excursions/excursionId', auth, async (req, res) => {
+router.delete('/leave/excursions/:excursionId', auth, async (req, res) => {
     try {
         const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
@@ -582,9 +578,7 @@ router.delete('/leave/excursions/excursionId', auth, async (req, res) => {
             { $pull: { sharedExcursions: req.params.excursionId } }
         ));
 
-        // TODO: Send Excursion object(s)
-
-        res.status(200).send(excursion);
+        res.status(200).send();
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -592,10 +586,10 @@ router.delete('/leave/excursions/excursionId', auth, async (req, res) => {
 });
 
 /**
- *  Remove Participant By User Id
+ *  Remove Participant By Id
  * 
  */
-router.delete('/remove/excursions/excursionId', auth, async (req, res) => {
+router.delete('/remove/excursions/:excursionId', auth, async (req, res) => {
     try {
         const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
@@ -623,8 +617,7 @@ router.delete('/remove/excursions/excursionId', auth, async (req, res) => {
             { $pull: { sharedExcursions: req.params.excursionId } }
         ));
 
-        // TODO: Return Excursion object(s)
-        res.status(200).send(excursion);
+        res.status(200).send();
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
