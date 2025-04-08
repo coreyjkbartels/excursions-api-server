@@ -147,10 +147,10 @@ router.delete('/friends/requests/:requestId', auth, async (req, res) => {
             return;
         }
 
-        if (friendRequest.sender != req.user._id) {
-            res.status(401).send({ Error: 'Unauthorized' });
-            return;
-        }
+        // if (friendRequest.sender != req.user._id) {
+        //     res.status(401).send({ Error: 'Unauthorized' });
+        //     return;
+        // }
 
         await User.updateOne((
             { _id: req.user._id },
