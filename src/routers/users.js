@@ -85,15 +85,25 @@ router.delete('/user', auth, async (req, res) => {
  *  []
  */
 router.get('/users', auth, async (req, res) => {
-    // limit, start, q (formerly keywords)
+    let filter = {}
 
-    // read in query params from the req
+    if (req.query.q) {
+        filter = {
+            $or: [
+                { userName: { $regex: req.query.q, $options: 'i' } },
+                { firstName: { $regex: req.query.q, $options: 'i' } },
+                { lastName: { $regex: req.query.q, $options: 'i' } }
+            ]
+        }
+    }
 
-    // fetch the objects from {start} to {start+limit} that contain the {keywords} in any of the "public" properties (i.e., NOT PASSWORD)
+    const users = await User.find(filter,
+        { userName: 1, firstName: 1, lastName: 1, _id: 1 }
+    )
+        .skip(parseInt(req.query.start))
+        .limit(parseInt(req.query.limit))
 
-    // for each object returned append it to an array
-
-    // return the array of objects to the client
+    res.status(200).send(users)
 });
 
 /**
