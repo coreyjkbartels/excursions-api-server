@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 
 const router = new express.Router();
 
+
 // ---------------------------- //
 // #region Excursion Management //
 // ---------------------------- //
@@ -375,26 +376,17 @@ router.delete('/trip/:tripId', auth, async (req, res) => {
 // ----------------------- //
 
 
-// -------------------------- //
-// #region Sharing Excursions //
-// -------------------------- //
-
-/**
- *  Excursion Invite Object
- *  _id
- *  sender (user)
- *  receiver (user)
- *  isAccepted
- *  excursionId
- */
+// -------------------------------- //
+// #region Shared Excursion Invites //
+// -------------------------------- //
 
 /**
  *  Create Excursion Share Invite
  * 
  */
-router.post('/excursion/share', auth, async (req, res) => {
+router.post('/share/excursion/:excursionId', auth, async (req, res) => {
     try {
-        const excursion = await Excursion.findById({ _id: req.body.excursionId });
+        const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
         if (!excursion) {
             res.status(400).send({ Error: 'Bad Request' });
@@ -403,7 +395,8 @@ router.post('/excursion/share', auth, async (req, res) => {
 
         const data = {
             "sender": req.user._id,
-            "receiver": req.body.friendId
+            "receiver": req.body.friendId,
+            "excursion": req.params.excursionId
         };
 
         const excursionInvite = new ExcursionInvite(data);
@@ -430,9 +423,9 @@ router.post('/excursion/share', auth, async (req, res) => {
  *  Get Excursion Invites By User
  * 
  */
-router.get('/excursion/share', auth, async (req, res) => {
+router.get('/share/excursions', auth, async (req, res) => {
     try {
-        const excursionInvites = await ExcursionInvite.findByUser(req.user._id);
+        const excursionInvites = await ExcursionInvite.findByUser(req.user);
 
         res.status(200).send(excursionInvites);
     } catch (error) {
@@ -445,7 +438,7 @@ router.get('/excursion/share', auth, async (req, res) => {
  *  Handle Excursion Invite
  * 
  */
-router.patch('/excursion/share/:inviteId', auth, async (req, res) => {
+router.patch('/share/excursions/:inviteId', auth, async (req, res) => {
 
     const mods = req.body;
 
@@ -517,7 +510,7 @@ router.patch('/excursion/share/:inviteId', auth, async (req, res) => {
  *  Delete Excursion Invite
  * 
  */
-router.delete('/excursion/share/:inviteId', auth, async (req, res) => {
+router.delete('/share/excursions/:inviteId', auth, async (req, res) => {
     try {
         const excursionInvite = await ExcursionInvite.findById(req.params.inviteId);
 
@@ -538,7 +531,7 @@ router.delete('/excursion/share/:inviteId', auth, async (req, res) => {
 
         await User.updateOne((
             { _id: excursionInvite.receiver },
-            { $pull: { incomingExcursionInites: req.params.inviteId } }
+            { $pull: { incomingExcursionInvites: req.params.inviteId } }
         ));
 
         // TODO: Get user objects and replace the sender/receiver ids with public profiles
@@ -552,13 +545,22 @@ router.delete('/excursion/share/:inviteId', auth, async (req, res) => {
     }
 });
 
+// -------------------------------- //
+// #endregion                       //
+// -------------------------------- //
+
+
+// ------------------------------------ //
+// #region Shared Excursion Management  //
+// ------------------------------------ //
+
 /**
  *  Leave Excursion By Id
  * 
  */
-router.delete('/excursion/leave/excursionId', auth, async (req, res) => {
+router.delete('/leave/excursions/excursionId', auth, async (req, res) => {
     try {
-        const excursion = await Excursion.findById({ _id: req.params._id });
+        const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
         if (!excursion) {
             res.status(400).send({ Error: "Invalid excursion id" });
@@ -581,7 +583,7 @@ router.delete('/excursion/leave/excursionId', auth, async (req, res) => {
         ));
 
         // TODO: Send Excursion object(s)
-        // .send(excursion, user) ?
+
         res.status(200).send(excursion);
     } catch (error) {
         console.log(error);
@@ -593,7 +595,7 @@ router.delete('/excursion/leave/excursionId', auth, async (req, res) => {
  *  Remove Participant By User Id
  * 
  */
-router.delete('/excursion/remove/excursionId', auth, async (req, res) => {
+router.delete('/remove/excursions/excursionId', auth, async (req, res) => {
     try {
         const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
@@ -629,8 +631,8 @@ router.delete('/excursion/remove/excursionId', auth, async (req, res) => {
     }
 });
 
-// -------------------------- //
-// #endregion                 //
-// -------------------------- //
+// ------------------------------------ //
+// #endregion                           //
+// ------------------------------------ //
 
 module.exports = router;
