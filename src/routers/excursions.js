@@ -138,7 +138,8 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
     const isValid = props.every((prop) => modifiable.includes(prop));
 
     if (!isValid) {
-        return res.status(400).send({ Error: 'Invalid Updates.' });
+        res.status(400).send({ Error: 'Invalid updates' });
+        return;
     }
 
     try {
@@ -157,10 +158,12 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
         props.forEach((prop) => excursion[prop] = mods[prop]);
         await excursion.save();
 
-        const trips = [];
-        for (let id of excursion.trips) {
-            const trip = await Trip.findById(id);
-            trips.push(trip);
+        if (req.body.trips) {
+            const trips = [];
+            for (let id of excursion.trips) {
+                const trip = await Trip.findById(id);
+                trips.push(trip);
+            }
         }
 
         excursion.trips = trips;
@@ -242,7 +245,7 @@ router.post('/trip', auth, async (req, res) => {
 });
 
 /**
- *  Get Trip By User
+ *  Get Trips By User
  *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/get-trips-by-user
  */
 router.get('/trips', auth, async (req, res) => {
@@ -338,7 +341,6 @@ router.delete('/trip/:tripId', auth, async (req, res) => {
     // TODO: Get Host User Object
 
     try {
-
         const trip = await Trip.findById({ _id: req.params.tripId });
 
         if (!trip.host.equals(req.user._id)) {

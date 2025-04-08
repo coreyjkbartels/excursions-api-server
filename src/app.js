@@ -6,6 +6,7 @@ const cors = require('cors');
 const userRouter = require('./routers/users');
 const npsRouter = require('./routers/national-park-service');
 const excursionRouter = require('./routers/excursions');
+const friendRouter = require('./routers/friends');
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,7 @@ app.use(function (req, res, next) {
 app.use(userRouter);
 app.use(npsRouter);
 app.use(excursionRouter);
+app.use(friendRouter);
 
 const port = process.env.PORT;
 app.listen(port, () => {
