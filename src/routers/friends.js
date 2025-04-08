@@ -37,7 +37,7 @@ router.post('/friends/requests', auth, async (req, res) => {
         ));
 
         await User.updateOne((
-            { _id: req.friend._id },
+            { _id: friend._id },
             { $push: { incomingFriendRequests: friendRequest._id } }
         ));
 
