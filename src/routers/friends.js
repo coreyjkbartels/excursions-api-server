@@ -93,7 +93,7 @@ router.patch('/friends/requests/:requestId', auth, async (req, res) => {
             return;
         }
 
-        // if (friendRequest.receiver != req.user._id) {
+        // if (friendRequest.receiver !== req.user._id) {
         //     res.status(403).send({ Error: "Forbidden" });
         //     return;
         // }
@@ -123,9 +123,9 @@ router.patch('/friends/requests/:requestId', auth, async (req, res) => {
             { $pull: { incomingFriendRequests: friendRequest._id } }
         ));
 
-        // TODO: Get user objects and replace the sender/receiver ids with public profiles
-
         await FriendRequest.deleteOne({ _id: friendRequest._id });
+
+        // TODO: Get user objects and replace the sender/receiver ids with public profiles
 
         res.status(200).send(friendRequest);
     } catch (error) {
@@ -147,8 +147,8 @@ router.delete('/friends/requests/:requestId', auth, async (req, res) => {
             return;
         }
 
-        // if (friendRequest.sender != req.user._id) {
-        //     res.status(401).send({ Error: 'Unauthorized' });
+        // if (friendRequest.sender !== req.user._id) {
+        //     res.status(403).send({ Error: 'Forbidden' });
         //     return;
         // }
 
@@ -161,6 +161,8 @@ router.delete('/friends/requests/:requestId', auth, async (req, res) => {
             { _id: friendRequest.receiver },
             { $pull: { incomingFriendRequests: req.params.requestId } }
         ));
+
+        // TODO: Get user objects and replace the sender/receiver ids with public profiles
 
         await FriendRequest.deleteOne({ _id: req.params.requestId });
 

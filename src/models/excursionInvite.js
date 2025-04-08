@@ -33,13 +33,14 @@ const excursionInviteSchema = new Schema({
  *  @returns excursionInvites {}
  */
 excursionInviteSchema.statics.findByUser = async (user) => {
-    const excursionInvites = {
-        "incoming": [],
-        "outgoing": [],
-    };
+    const incomingInvites = await ExcursionInvite.find({ receiver: user._id }).exec();
 
-    // get incoming, push to array
-    // get outgoing, push to array
+    const outgoingInvites = await ExcursionInvite.find({ sender: user._id }).exec();
+
+    const excursionInvites = {
+        "incoming": incomingInvites,
+        "outgoing": outgoingInvites
+    };
 
     return excursionInvites;
 };

@@ -173,7 +173,6 @@ userSchema.statics.findPublicUser = async function (id) {
     // --> json stringify?
 
     if (user) {
-        delete user.email;
         delete user.password;
         delete user.friends;
         delete user.incomingFriendRequests;
