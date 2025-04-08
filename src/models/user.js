@@ -182,6 +182,22 @@ userSchema.statics.findPublicUser = async function (id) {
     return user;
 };
 
+userSchema.statics.findFriendsByUser = async function (id) {
+    const user = await User.findById({ _id: id });
+
+    // if (user.friends.length === 0) {
+    //     return [];
+    // }
+
+    let friends = [];
+    for (let i = 0; i < user.friends.length; i++) {
+        const friend = await User.findPublicUser({ _id: user.friends[i] });
+        friends.push(friend);
+    }
+
+    return friends;
+};
+
 /**
  * 
  */
