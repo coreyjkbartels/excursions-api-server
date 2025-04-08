@@ -113,14 +113,17 @@ router.get('/users', auth, async (req, res) => {
 router.get('/user/:userId', auth, async (req, res) => {
     try {
         const userId = req.params.userId;
-        const user = await User.findById({ _id: userId });
+        const user = await User.findById({ _id: userId }, {
+            userName: 1,
+            firstName: 1,
+            lastName: 1,
+            _id: 1
+        });
 
         if (!user) {
             res.status(404);
             throw new Error("Not Found");
         }
-
-        // TODO: Remove sensitive data properties.
 
         res.status(200).send(user);
     } catch (error) {
