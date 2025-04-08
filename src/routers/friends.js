@@ -119,6 +119,32 @@ router.delete('/friends/requests/:requestId', auth, async (req, res) => {
 // #region Friend Management //
 // ------------------------- //
 
+/**
+ *  Get Friends by User
+ * 
+ */
+router.get('/friends/requests', auth, async (req, res) => {
+    try {
+        // TODO: Return an array of user objects from the currently authenticated user's friends list.
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
+
+/**
+ *  Delete Friend
+ * 
+ */
+router.delete('/friends/requests', auth, async (req, res) => {
+    try {
+        // TODO: Return the public profile of the user who was removed
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
+
 // ------------------------- //
 // #endregion                //
 // ------------------------- //
