@@ -55,17 +55,16 @@ const userSchema = new Schema({
         ref: 'User',
         required: false,
     }],
-    // # CHANGE THIS TO FRIEND REQUESTS IDS
-    // incomingFriendRequests: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'User',
-    //     required: false,
-    // }],
-    // outgoingFriendRequests: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'User',
-    //     required: false,
-    // }],
+    incomingFriendRequests: [{
+        type: Schema.Types.ObjectId,
+        ref: 'FriendRequest',
+        required: false,
+    }],
+    outgoingFriendRequests: [{
+        type: Schema.Types.ObjectId,
+        ref: 'FriendRequest',
+        required: false,
+    }],
     hostedExcursions: [{
         type: Schema.Types.ObjectId,
         ref: 'Excursion',
@@ -84,17 +83,16 @@ const userSchema = new Schema({
         default: null,
         // probably requires a validator to make sure the "isComplete" property on the Excursion is true
     }],
-    // # CHANGE THIS TO EXCURSION INVITE IDS
-    // incomingExcursionInvites: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'User',
-    //     required: false,
-    // }],
-    // outgoingExcursionInvites: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'User',
-    //     required: false,
-    // }],
+    incomingExcursionInvites: [{
+        type: Schema.Types.ObjectId,
+        ref: 'ExcursionInvite',
+        required: false,
+    }],
+    outgoingExcursionInvites: [{
+        type: Schema.Types.ObjectId,
+        ref: 'ExcursionInvite',
+        required: false,
+    }],
     hostedTrips: [{
         type: Schema.Types.ObjectId,
         ref: 'Trip',
