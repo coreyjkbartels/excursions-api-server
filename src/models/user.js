@@ -168,42 +168,18 @@ userSchema.statics.findByCredentials = async (email, password) => {
  *  @returns object user
  */
 userSchema.statics.findPublicUser = async function (id) {
-    // .lean() returns a JS object, not a mongoose object.
-    const user = await User.findById(id).lean();
-    // --> json stringify?
-
-    if (user) {
-        delete user.password;
-        delete user.friends;
-        delete user.incomingFriendRequests;
-        delete user.outgoingFriendRequests;
-        delete user.hostedExcursions;
-        delete user.sharedExcursions;
-        delete user.completedExcursions;
-        delete user.incomingExcursionInvites;
-        delete user.outgoingExcursionInvites;
-        delete user.hostedTrips;
-        delete user.tokens;
-        delete user.__v;
-    }
+    const user = await User.find(
+        { _id: id },
+        {
+            _id: 1,
+            userName: 1,
+            firstName: 1,
+            lastName: 1,
+            email: 1,
+        }
+    );
 
     return user;
-};
-
-userSchema.statics.findFriendsByUser = async function (id) {
-    const user = await User.findById({ _id: id });
-
-    // if (user.friends.length === 0) {
-    //     return [];
-    // }
-
-    let friends = [];
-    for (let i = 0; i < user.friends.length; i++) {
-        const friend = await User.findPublicUser({ _id: user.friends[i] });
-        friends.push(friend);
-    }
-
-    return friends;
 };
 
 /**
