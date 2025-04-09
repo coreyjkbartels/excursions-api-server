@@ -822,10 +822,10 @@ router.patch('/share/excursions/:inviteId', auth, async (req, res) => {
             return;
         }
 
-        if (excursionInvite.receiver !== req.user._id) {
-            res.status(403).send({ Error: "Forbidden" });
-            return;
-        }
+        // if (excursionInvite.receiver !== req.user._id) {
+        //     res.status(403).send({ Error: "Forbidden" });
+        //     return;
+        // }
 
         props.forEach((prop) => excursionInvite[prop] = mods[prop]);
         await excursionInvite.save();
