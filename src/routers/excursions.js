@@ -194,9 +194,9 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
             return;
         }
 
-        // if (excursion.host !== req.user._id && !excursion.participants.includes(req.user._id)) {
-        //     res.status(403).send({ Error: "Forbidden" });
-        // }
+        if (excursion.host !== req.user._id && !excursion.participants.includes(req.user._id)) {
+            res.status(403).send({ Error: "Forbidden" });
+        }
 
         const host = await User.findById(
             { _id: excursion.host },
@@ -493,7 +493,7 @@ router.get('/trip/:tripId', auth, async (req, res) => {
             trip.host = host;
         }
 
-        res.status(200).send(trip);
+        res.status(200).send({ trip });
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
@@ -553,7 +553,7 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
             trip.host = host;
         }
 
-        res.status(200).send(trip);
+        res.status(200).send({ trip });
     } catch (error) {
         console.log(error);
         res.status(500).send(error);

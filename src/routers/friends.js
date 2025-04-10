@@ -151,10 +151,10 @@ router.patch('/friends/requests/:requestId', auth, async (req, res) => {
             return;
         }
 
-        // if (friendRequest.receiver !== req.user._id) {
-        //     res.status(403).send({ Error: "Forbidden" });
-        //     return;
-        // }
+        if (friendRequest.receiver !== req.user._id) {
+            res.status(403).send({ Error: "Forbidden" });
+            return;
+        }
 
         props.forEach((prop) => friendRequest[prop] = mods[prop]);
         await friendRequest.save();
@@ -216,10 +216,10 @@ router.delete('/friends/requests/:requestId', auth, async (req, res) => {
             return;
         }
 
-        // if (friendRequest.sender !== req.user._id) {
-        //     res.status(403).send({ Error: 'Forbidden' });
-        //     return;
-        // }
+        if (friendRequest.sender !== req.user._id) {
+            res.status(403).send({ Error: 'Forbidden' });
+            return;
+        }
 
         await User.updateOne((
             { _id: req.user._id },

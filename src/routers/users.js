@@ -22,7 +22,7 @@ router.post('/user', async (req, res) => {
         res.status(201).send({ user, token });
     } catch (error) {
         console.log(error);
-        res.status(400).send(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -31,7 +31,8 @@ router.post('/user', async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/User-Management/operation/get-user
  */
 router.get("/user", auth, async (req, res) => {
-    res.status(200).send(req.user);
+    const user = req.user;
+    res.status(200).send({ user });
 });
 
 /**
@@ -42,8 +43,7 @@ router.patch('/user', auth, async (req, res) => {
     const mods = req.body;
 
     if (mods.length === 0) {
-        res.status(400);
-        throw new Error("Bad Request");
+        res.status(400).send({ Error: 'Missing updates' });
     }
 
     const props = Object.keys(mods);
@@ -60,9 +60,10 @@ router.patch('/user', auth, async (req, res) => {
         props.forEach((prop) => user[prop] = mods[prop]);
         await user.save();
 
-        res.status(200).send(user);
+        res.status(200).send({ user });
     } catch (error) {
-        res.status(400).send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -74,15 +75,16 @@ router.delete('/user', auth, async (req, res) => {
     try {
         await User.deleteOne({ _id: req.user._id });
 
-        res.status(200).send(req.user);
+        res.status(200).send();
     } catch (error) {
-        res.status(500).send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
 /**
  *  Get Users
- *  []
+ *  https://will-german.github.io/excursions-api-docs/#tag/User-Management/operation/get-users
  */
 router.get('/users', auth, async (req, res) => {
     // limit, start, q (formerly keywords)
@@ -118,9 +120,10 @@ router.get('/user/:userId', auth, async (req, res) => {
             return;
         }
 
-        res.status(200).send(user);
+        res.status(200).send({ user });
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -143,7 +146,8 @@ router.post('/user/sign-in', async (req, res) => {
 
         res.status(200).send({ user, token });
     } catch (error) {
-        res.status(400).send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -158,15 +162,18 @@ router.post("/user/sign-out", auth, async (req, res) => {
         });
         await req.user.save();
 
-        res.send();
+        res.status(200).send();
     } catch (error) {
-        res.status(500).send(error);
+        console.log(error);
+        res.status(500).send({ Error: 'Internal Server Error' });
     }
 });
 
 // --------------------------- //
 // #endregion                  //
 // --------------------------- //
+
+// TODO: Implemenet avatars
 
 // -------------------------- //
 // #region User Customization //

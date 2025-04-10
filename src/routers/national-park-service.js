@@ -53,7 +53,8 @@ router.get('/national-parks', auth, async (req, res) => {
         }
 
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -121,7 +122,8 @@ router.get('/national-parks/summary', auth, async (req, res) => {
         }
 
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -194,7 +196,8 @@ router.get('/national-parks/codes', auth, async (req, res) => {
         }
 
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -242,7 +245,8 @@ router.get('/campgrounds', auth, async (req, res) => {
         }
 
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -290,7 +294,8 @@ router.get('/things-to-do', auth, async (req, res) => {
         }
 
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
@@ -304,7 +309,7 @@ router.get('/things-to-do', auth, async (req, res) => {
 
 /**
  *  Get Audio
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Multimedia/operation/get-multimedia-audio
  */
 router.get('/multimedia/audio', async (req, res) => {
     try {
@@ -340,12 +345,14 @@ router.get('/multimedia/audio', async (req, res) => {
             }
         }
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
 /**
  *  Get Galleries
+ *  https://will-german.github.io/excursions-api-docs/#tag/Multimedia/operation/get-multimedia-galleries
  */
 router.get('/multimedia/galleries', async (req, res) => {
     try {
@@ -381,12 +388,14 @@ router.get('/multimedia/galleries', async (req, res) => {
             }
         }
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
 /**
  *  Get Galleries Assets
+ *  https://will-german.github.io/excursions-api-docs/#tag/Multimedia/operation/get-multimedia-galleries-assets
  */
 router.get('/multimedia/galleries/assets', async (req, res) => {
     try {
@@ -422,12 +431,14 @@ router.get('/multimedia/galleries/assets', async (req, res) => {
             }
         }
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
 /**
  *  Get Videos
+ *  https://will-german.github.io/excursions-api-docs/#tag/Multimedia/operation/get-multimedia-videos
  */
 router.get('/multimedia/videos', async (req, res) => {
     try {
@@ -463,7 +474,8 @@ router.get('/multimedia/videos', async (req, res) => {
             }
         }
     } catch (error) {
-        res.send(error);
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
