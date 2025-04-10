@@ -1,11 +1,13 @@
 const express = require('express');
 const Excursion = require('../models/excursion');
+const ExcursionInvite = require('../models/excursionInvite');
 const Trip = require('../models/trip');
 const User = require('../models/user');
 const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
 
 const router = new express.Router();
+
 
 // ---------------------------- //
 // #region Excursion Management //
@@ -19,20 +21,72 @@ router.post('/excursion', auth, async (req, res) => {
     try {
         req.body.host = req.user._id;
 
-        const excursion = new Excursion(req.body);
+        let excursion = new Excursion(req.body);
         await excursion.save();
 
-        // TODO: Get Host User Object
+        const filter = { _id: excursion._id };
 
-        if (req.body.trips) {
-            const trips = [];
-            for (let id of req.body.trips) {
-                const trip = await Trip.findById(id);
-                trips.push(trip);
+        const pipeline = Excursion.aggregate([
+            { $match: filter },
+            {
+                $lookup: {
+                    from: "trips",
+                    foreignField: '_id',
+                    localField: "trips",
+                    as: "trips"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "host",
+                    as: "host",
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "participants",
+                    as: "participants",
+                }
+            },
+            {
+                $project: {
+                    "name": 1,
+                    "description": 1,
+                    "isComplete": 1,
+                    "createdAt": 1,
+                    "updatedAt": 1,
+
+                    "trips._id": 1,
+                    "trips.name": 1,
+                    "trips.description": 1,
+                    "trips.park": 1,
+                    "trips.campground": 1,
+                    "trips.thingstodo": 1,
+                    "trips.startDate": 1,
+                    "trips.endDate": 1,
+                    "trips.createdAt": 1,
+                    "trips.updatedAt": 1,
+
+                    "host._id": 1,
+                    "host.userName": 1,
+                    "host.firstName": 1,
+                    "host.lastName": 1,
+                    "host.email": 1,
+
+                    "participants._id": 1,
+                    "participants.userName": 1,
+                    "participants.firstName": 1,
+                    "participants.lastName": 1,
+                    "participants.email": 1,
+                }
             }
+        ]);
 
-            excursion.trips = trips;
-        }
+        excursion = await pipeline.exec();
 
         res.status(201).send({ excursion });
     } catch (error) {
@@ -46,11 +100,17 @@ router.post('/excursion', auth, async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/get-excursions-by-user
  */
 router.get('/excursions', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
     try {
-        const filter = { host: req.user._id };
+        const filter = {
+            $or: [
+                { host: req.user._id },
+                {
+                    participants: {
+                        $all: [req.user._id]
+                    }
+                }
+            ]
+        };
 
         const pipeline = Excursion.aggregate([
             { $match: filter },
@@ -63,13 +123,51 @@ router.get('/excursions', auth, async (req, res) => {
                 }
             },
             {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "host",
+                    as: "host",
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "participants",
+                    as: "participants",
+                }
+            },
+            {
                 $project: {
                     "name": 1,
                     "description": 1,
+                    "isComplete": 1,
+                    "createdAt": 1,
+                    "updatedAt": 1,
 
                     "trips._id": 1,
                     "trips.name": 1,
-                    "trips.description": 1
+                    "trips.description": 1,
+                    "trips.park": 1,
+                    "trips.campground": 1,
+                    "trips.thingstodo": 1,
+                    "trips.startDate": 1,
+                    "trips.endDate": 1,
+                    "trips.createdAt": 1,
+                    "trips.updatedAt": 1,
+
+                    "host._id": 1,
+                    "host.userName": 1,
+                    "host.firstName": 1,
+                    "host.lastName": 1,
+                    "host.email": 1,
+
+                    "participants._id": 1,
+                    "participants.userName": 1,
+                    "participants.firstName": 1,
+                    "participants.lastName": 1,
+                    "participants.email": 1,
                 }
             }
         ]);
@@ -77,7 +175,6 @@ router.get('/excursions', auth, async (req, res) => {
         const excursions = await pipeline.exec();
 
         res.status(200).send({ excursions });
-
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
@@ -89,9 +186,6 @@ router.get('/excursions', auth, async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/get-excursion-by-id
  */
 router.get('/excursion/:excursionId', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
     try {
         const excursion = await Excursion.findById(req.params.excursionId);
 
@@ -100,15 +194,50 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
             return;
         }
 
-        // TODO: check make sure req.user is host or participant
-
-        const trips = [];
-        for (let id of excursion.trips) {
-            const trip = await Trip.findById(id);
-            trips.push(trip);
+        if (excursion.host !== req.user._id && !excursion.participants.includes(req.user._id)) {
+            res.status(403).send({ Error: "Forbidden" });
         }
 
-        excursion.trips = trips;
+        const host = await User.findById(
+            { _id: excursion.host },
+            {
+                _id: 1,
+                userName: 1,
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+            }
+        );
+
+        if (host) {
+            excursion.host = host;
+        }
+
+        if (excursion.trips) {
+            const trips = [];
+
+            for (let id of excursion.trips) {
+                const trip = await Trip.findById(
+                    { _id: id },
+                    {
+                        _id: 1,
+                        name: 1,
+                        description: 1,
+                        park: 1,
+                        campground: 1,
+                        thingstodo: 1,
+                        startDate: 1,
+                        endDate: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                    }
+                );
+
+                trips.push(trip);
+            }
+
+            excursion.trips = trips;
+        }
 
         res.status(200).send({ excursion });
     } catch (error) {
@@ -122,9 +251,6 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/patch-excursion-by-id
  */
 router.patch('/excursion/:excursionId', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
     const mods = req.body;
 
     if (mods.length === 0) {
@@ -138,7 +264,8 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
     const isValid = props.every((prop) => modifiable.includes(prop));
 
     if (!isValid) {
-        return res.status(400).send({ Error: 'Invalid Updates.' });
+        res.status(400).send({ Error: 'Invalid updates' });
+        return;
     }
 
     try {
@@ -157,13 +284,46 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
         props.forEach((prop) => excursion[prop] = mods[prop]);
         await excursion.save();
 
-        const trips = [];
-        for (let id of excursion.trips) {
-            const trip = await Trip.findById(id);
-            trips.push(trip);
+        const host = await User.findById(
+            { _id: excursion.host },
+            {
+                _id: 1,
+                userName: 1,
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+            }
+        );
+
+        if (host) {
+            excursion.host = host;
         }
 
-        excursion.trips = trips;
+        if (excursion.trips) {
+            const trips = [];
+
+            for (let id of excursion.trips) {
+                const trip = await Trip.findById(
+                    { _id: id },
+                    {
+                        _id: 1,
+                        name: 1,
+                        description: 1,
+                        park: 1,
+                        campground: 1,
+                        thingstodo: 1,
+                        startDate: 1,
+                        endDate: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                    }
+                );
+
+                trips.push(trip);
+            }
+
+            excursion.trips = trips;
+        }
 
         res.status(200).send({ excursion });
     } catch (error) {
@@ -177,20 +337,24 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/delete-excursion-by-id
  */
 router.delete('/excursion/:excursionId', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
     try {
         if (!mongoose.isValidObjectId(req.params.excursionId)) {
             res.status(400).send({ Error: "Invalid excursion id" });
             return;
         }
 
-        // TODO: pull from participant's excursions list
+        const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
         await User.updateOne((
             { _id: req.user._id },
             { $pull: { hostedExcursions: req.params.excursionId } }
+        ));
+
+        const filter = { _id: { $in: [...excursion.participants] } };
+
+        await User.updateMany((
+            { $match: filter },
+            { $pull: { sharedExcursions: req.params.excursionId } }
         ));
 
         await Excursion.deleteOne({ _id: req.params.excursionId });
@@ -206,7 +370,6 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
 // #endregion                   //
 // ---------------------------- //
 
-
 // ----------------------- //
 // #region Trip Management //
 // ----------------------- //
@@ -216,9 +379,6 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/create-trip
  */
 router.post('/trip', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
     try {
         const data = {
             ...req.body,
@@ -228,9 +388,23 @@ router.post('/trip', auth, async (req, res) => {
         const trip = new Trip(data);
         await trip.save();
 
-        // does this not need to be req.user._id
+        const host = await User.findById(
+            { _id: trip.host },
+            {
+                _id: 1,
+                userName: 1,
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+            }
+        );
+
+        if (host) {
+            trip.host = host;
+        }
+
         await User.updateOne((
-            { _id: req.body._id },
+            { _id: req.user._id },
             { $push: { hostedTrips: trip._id } }
         ));
 
@@ -242,16 +416,49 @@ router.post('/trip', auth, async (req, res) => {
 });
 
 /**
- *  Get Trip By User
+ *  Get Trips By User
  *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/get-trips-by-user
  */
 router.get('/trips', auth, async (req, res) => {
 
-    // TODO: Get Host User Object
-
     try {
-        const trips = await Trip.findByUser(req.user._id);
-        res.status(200).send(trips);
+        const filter = { host: req.user._id };
+
+        const pipeline = Trip.aggregate([
+            { $match: filter },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "host",
+                    as: "host",
+                }
+            },
+            {
+                $project: {
+                    "_id": 1,
+                    "name": 1,
+                    "description": 1,
+                    "park": 1,
+                    "campground": 1,
+                    "thingstodo": 1,
+                    "startDate": 1,
+                    "endDate": 1,
+                    "createdAt": 1,
+                    "updatedAt": 1,
+
+                    "host._id": 1,
+                    "host.userName": 1,
+                    "host.firstName": 1,
+                    "host.lastName": 1,
+                    "host.email": 1,
+                }
+            }
+        ]);
+
+        const trips = await pipeline.exec();
+
+        res.status(200).send({ trips });
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
@@ -263,9 +470,6 @@ router.get('/trips', auth, async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/get-trip-by-id
  */
 router.get('/trip/:tripId', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
     try {
         const trip = await Trip.findById({ _id: req.params.tripId });
 
@@ -274,7 +478,22 @@ router.get('/trip/:tripId', auth, async (req, res) => {
             return;
         }
 
-        res.status(200).send(trip);
+        const host = await User.findById(
+            { _id: trip.host },
+            {
+                _id: 1,
+                userName: 1,
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+            }
+        );
+
+        if (host) {
+            trip.host = host;
+        }
+
+        res.status(200).send({ trip });
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
@@ -286,9 +505,6 @@ router.get('/trip/:tripId', auth, async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/patch-trip-by-id
  */
 router.patch('/trip/:tripId', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
     const mods = req.body;
 
     if (mods.length === 0) {
@@ -322,7 +538,22 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
         props.forEach((prop) => trip[prop] = mods[prop]);
         await trip.save();
 
-        res.status(200).send(trip);
+        const host = await User.findById(
+            { _id: trip.host },
+            {
+                _id: 1,
+                userName: 1,
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+            }
+        );
+
+        if (host) {
+            trip.host = host;
+        }
+
+        res.status(200).send({ trip });
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
@@ -334,11 +565,7 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
  *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/delete-trip-by-id
  */
 router.delete('/trip/:tripId', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
     try {
-
         const trip = await Trip.findById({ _id: req.params.tripId });
 
         if (!trip.host.equals(req.user._id)) {
@@ -346,14 +573,17 @@ router.delete('/trip/:tripId', auth, async (req, res) => {
             return;
         }
 
-        await Trip.deleteOne({ _id: req.params.tripId });
-
         await User.updateOne((
             { _id: req.user._id },
             { $pull: { hostedTrips: req.params.tripId } }
         ));
 
-        // TODO: delete trip from all excursions
+        await Excursion.updateMany((
+            { host: req.user._id },
+            { $pull: { trips: req.params.tripId } }
+        ));
+
+        await Trip.deleteOne({ _id: req.params.tripId });
 
         await Excursion.updateMany(
             { host: req.user._id },
@@ -371,27 +601,108 @@ router.delete('/trip/:tripId', auth, async (req, res) => {
 // #endregion              //
 // ----------------------- //
 
-
-// -------------------------- //
-// #region Sharing Excursions //
-// -------------------------- //
-
-/**
- *  Excursion Invite Object
- *  _id
- *  sender (user)
- *  receiver (user)
- *  isAccepted
- *  excursionId
- */
+// -------------------------------- //
+// #region Shared Excursion Invites //
+// -------------------------------- //
 
 /**
  *  Create Excursion Share Invite
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Sharing-Excursions/operation/create-excursion-invite
  */
-router.post('/excursion/share', auth, async (req, res) => {
+router.post('/share/excursion/:excursionId', auth, async (req, res) => {
     try {
-        // ...
+        const excursion = await Excursion.findById({ _id: req.params.excursionId });
+
+        if (!excursion) {
+            res.status(400).send({ Error: 'Bad Request' });
+            return;
+        }
+
+        const data = {
+            "sender": req.user._id,
+            "receiver": req.body.friendId,
+            "excursion": req.params.excursionId
+        };
+
+        let excursionInvite = new ExcursionInvite(data);
+        await excursionInvite.save();
+
+        await User.updateOne((
+            { _id: req.user._id },
+            { outgoingExcursionInvites: excursionInvite._id }
+        ));
+
+        await User.updateOne((
+            { _id: req.body.friendId },
+            { incomingExcursionInvites: excursionInvite._id }
+        ));
+
+        let filter = { _id: excursionInvite._id };
+
+        const pipeline = ExcursionInvite.aggregate([
+            { $match: filter },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "sender",
+                    as: "sender"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "receiver",
+                    as: "receiver"
+                }
+            },
+            {
+                $lookup: {
+                    from: "excursions",
+                    foreignField: "_id",
+                    localField: "excursion",
+                    pipeline: [{
+                        $lookup: {
+                            from: "trips",
+                            foreignField: "_id",
+                            localField: "trips",
+                            as: "trips",
+                        }
+                    }],
+                    as: "excursion"
+                }
+            },
+            {
+                $project: {
+                    "_id": 1,
+                    "isAccepted": 1,
+
+                    "sender._id": 1,
+                    "sender.userName": 1,
+                    "sender.firstName": 1,
+                    "sender.lastName": 1,
+                    "sender.email": 1,
+
+                    "receiver._id": 1,
+                    "receiver.userName": 1,
+                    "receiver.firstName": 1,
+                    "receiver.lastName": 1,
+                    "receiver.email": 1,
+
+                    "excursion._id": 1,
+                    "excursion.name": 1,
+                    "excursion.description": 1,
+                    "excursion.trips": 1, // would be nice to remove "__v" field but w/e lol
+                    "excursion.createdAt": 1,
+                    "excursion.updatedAt": 1,
+                }
+            }
+        ]);
+
+        excursionInvite = await pipeline.exec();
+
+        res.status(201).send({ excursionInvite });
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -400,24 +711,81 @@ router.post('/excursion/share', auth, async (req, res) => {
 
 /**
  *  Get Excursion Invites By User
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Sharing-Excursions/operation/get-excursion-invites
  */
-router.get('/excursion/share', auth, async (req, res) => {
+router.get('/share/excursions', auth, async (req, res) => {
     try {
-        // ...
-    } catch (error) {
-        console.log(error);
-        res.status(400).send({ Error: 'Bad Request' });
-    }
-});
+        const filter = {
+            $or: [
+                { sender: req.user._id },
+                { receiver: req.user._id }
+            ]
+        };
 
-/**
- *  Remove User By Excursion Id
- * 
- */
-router.delete('/excursion/share/:excursionId', auth, async (req, res) => {
-    try {
-        // ...
+        const pipeline = ExcursionInvite.aggregate([
+            { $match: filter },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "sender",
+                    as: "sender"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "receiver",
+                    as: "receiver"
+                }
+            },
+            {
+                $lookup: {
+                    from: "excursions",
+                    foreignField: "_id",
+                    localField: "excursion",
+                    pipeline: [{
+                        $lookup: {
+                            from: "trips",
+                            foreignField: "_id",
+                            localField: "trips",
+                            as: "trips",
+                        }
+                    }],
+                    as: "excursion"
+                }
+            },
+            {
+                $project: {
+                    "_id": 1,
+                    "isAccepted": 1,
+
+                    "sender._id": 1,
+                    "sender.userName": 1,
+                    "sender.firstName": 1,
+                    "sender.lastName": 1,
+                    "sender.email": 1,
+
+                    "receiver._id": 1,
+                    "receiver.userName": 1,
+                    "receiver.firstName": 1,
+                    "receiver.lastName": 1,
+                    "receiver.email": 1,
+
+                    "excursion._id": 1,
+                    "excursion.name": 1,
+                    "excursion.description": 1,
+                    "excursion.trips": 1, // would be nice to remove "__v" field but w/e lol
+                    "excursion.createdAt": 1,
+                    "excursion.updatedAt": 1,
+                }
+            }
+        ]);
+
+        const excursionInvites = await pipeline.exec();
+
+        res.status(200).send({ excursionInvites });
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -426,11 +794,67 @@ router.delete('/excursion/share/:excursionId', auth, async (req, res) => {
 
 /**
  *  Handle Excursion Invite
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Sharing-Excursions/operation/handle-excursion-invite
  */
-router.patch('/excursion/share/:excursionId', auth, async (req, res) => {
+router.patch('/share/excursions/:inviteId', auth, async (req, res) => {
+    const mods = req.body;
+
+    if (mods.length === 0) {
+        res.status(400).send({ Error: "Missing updates" });
+        return;
+    }
+
+    const props = Object.keys(mods);
+    const modifiable = ['isAccepted'];
+
+    const isValid = props.every((prop) => modifiable.includes(prop));
+
+    if (!isValid) {
+        res.status(400).send({ Error: "Invalid updates" });
+        return;
+    }
+
     try {
-        // ...
+        const excursionInvite = await ExcursionInvite.findById({ _id: req.params.inviteId });
+
+        if (!excursionInvite) {
+            res.status(400).send({ Error: 'Invalid invite id' });
+            return;
+        }
+
+        // if (excursionInvite.receiver !== req.user._id) {
+        //     res.status(403).send({ Error: "Forbidden" });
+        //     return;
+        // }
+
+        props.forEach((prop) => excursionInvite[prop] = mods[prop]);
+        await excursionInvite.save();
+
+        if (req.body.isAccepted) {
+            await Excursion.updateOne((
+                { _id: excursionInvite.excursion },
+                { $push: { participants: req.user._id } }
+            ));
+
+            await User.updateOne((
+                { _id: req.user._id },
+                { $push: { sharedExcursions: excursionInvite.excursion } }
+            ));
+        }
+
+        await User.updateOne((
+            { _id: excursionInvite.sender },
+            { $pull: { outgoingExcursionInvites: excursionInvite._id } }
+        ));
+
+        await User.updateOne((
+            { _id: excursionInvite.receiver },
+            { $pull: { incomingExcursionInvites: excursionInvite._id } }
+        ));
+
+        await ExcursionInvite.deleteOne({ _id: excursionInvite._id });
+
+        res.status(200).send();
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -439,19 +863,126 @@ router.patch('/excursion/share/:excursionId', auth, async (req, res) => {
 
 /**
  *  Delete Excursion Invite
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Sharing-Excursions/operation/delete-excursion-invite
  */
-router.delete('/excursion/share/:excursionId', auth, async (req, res) => {
+router.delete('/share/excursions/:inviteId', auth, async (req, res) => {
     try {
-        // ...
+        const excursionInvite = await ExcursionInvite.findById(req.params.inviteId);
+
+        if (!excursionInvite) {
+            res.status(400).send({ Error: 'Bad Request' });
+            return;
+        }
+
+        if (excursionInvite.sender !== req.user._id) {
+            res.status(403).send({ Error: 'Forbidden' });
+            return;
+        }
+
+        await User.updateOne((
+            { _id: excursionInvite.sender },
+            { $pull: { outgoingExcursionInvites: req.params.inviteId } }
+        ));
+
+        await User.updateOne((
+            { _id: excursionInvite.receiver },
+            { $pull: { incomingExcursionInvites: req.params.inviteId } }
+        ));
+
+        await excursionInvite.deleteOne({ _id: req.params.inviteId });
+
+        res.status(200).send();
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
     }
 });
 
-// -------------------------- //
-// #endregion                 //
-// -------------------------- //
+// -------------------------------- //
+// #endregion                       //
+// -------------------------------- //
+
+// ------------------------------------ //
+// #region Shared Excursion Management  //
+// ------------------------------------ //
+
+/**
+ *  Remove Participant By Id
+ *  https://will-german.github.io/excursions-api-docs/#tag/Sharing-Excursions/operation/remove-user-by-excursion-id
+ */
+router.delete('/remove/excursions/:excursionId', auth, async (req, res) => {
+    try {
+        const excursion = await Excursion.findById({ _id: req.params.excursionId });
+
+        if (!excursion) {
+            res.status(400).send({ Error: "Invalid excursion id" });
+            return;
+        }
+
+        if (excursion.host !== req.user._id) {
+            res.status(403).send({ Error: "Forbidden" });
+            return;
+        }
+
+        if (!req.body.participantId) {
+            res.status(400).send({ Error: "Missing participant id" });
+        }
+
+        await Excursion.updateOne((
+            { _id: req.params.excursionId },
+            { $pull: { participants: req.body.participantId } }
+        ));
+
+        await User.updateOne((
+            { _id: req.body.participantId },
+            { $pull: { sharedExcursions: req.params.excursionId } }
+        ));
+
+        res.status(200).send();
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
+
+/**
+ *  Leave Excursion By Id
+ *  https://will-german.github.io/excursions-api-docs/#tag/Sharing-Excursions/operation/leave-excursion-by-id
+ */
+router.delete('/leave/excursions/:excursionId', auth, async (req, res) => {
+    try {
+        const excursion = await Excursion.findById({ _id: req.params.excursionId });
+
+        if (!excursion) {
+            res.status(400).send({ Error: "Invalid excursion id" });
+            return;
+        }
+
+        if (excursion.host === req.user._id) {
+            res.status(403).send({ Error: "Forbidden" });
+            return;
+        }
+
+        await Excursion.updateOne((
+            { _id: req.params.excursionId },
+            { $pull: { participants: req.user._id } }
+        ));
+
+        await User.updateOne((
+            { _id: req.user._id },
+            { $pull: { sharedExcursions: req.params.excursionId } }
+        ));
+
+        res.status(200).send();
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
+
+// ------------------------------------ //
+// #endregion                           //
+// ------------------------------------ //
+
 
 module.exports = router;

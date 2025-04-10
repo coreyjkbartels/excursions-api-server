@@ -48,19 +48,6 @@ const excursionSchema = new Schema({
 },
     { timestamps: true });
 
-
-// Get all excursions for a given user
-/**
- *  findByUser
- *  @param { User } user
- *  @returns [{ excursion }]
- */
-excursionSchema.statics.findByUser = async (user) => {
-    const excursions = await Excursion.find({ host: user._id }).exec();
-
-    return excursions;
-};
-
 const Excursion = mongoose.model('Excursion', excursionSchema);
 
 module.exports = Excursion;
