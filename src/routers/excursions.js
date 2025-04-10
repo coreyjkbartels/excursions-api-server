@@ -13,7 +13,7 @@ const router = new express.Router();
 
 /**
  *  Create Excursion
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/create-excursion
  */
 router.post('/excursion', auth, async (req, res) => {
     try {
@@ -43,7 +43,7 @@ router.post('/excursion', auth, async (req, res) => {
 
 /**
  *  Get Excursions By User
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/get-excursions-by-user
  */
 router.get('/excursions', auth, async (req, res) => {
 
@@ -86,7 +86,7 @@ router.get('/excursions', auth, async (req, res) => {
 
 /**
  *  Get Excursion By Id
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/get-excursion-by-id
  */
 router.get('/excursion/:excursionId', auth, async (req, res) => {
 
@@ -119,7 +119,7 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
 
 /**
  *  Update Excursion By Id
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/patch-excursion-by-id
  */
 router.patch('/excursion/:excursionId', auth, async (req, res) => {
 
@@ -174,7 +174,7 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
 
 /**
  *  Delete Excursion By Id
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Excursions/operation/delete-excursion-by-id
  */
 router.delete('/excursion/:excursionId', auth, async (req, res) => {
 
@@ -213,7 +213,7 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
 
 /**
  *  Create Trip
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/create-trip
  */
 router.post('/trip', auth, async (req, res) => {
 
@@ -228,6 +228,7 @@ router.post('/trip', auth, async (req, res) => {
         const trip = new Trip(data);
         await trip.save();
 
+        // does this not need to be req.user._id
         await User.updateOne((
             { _id: req.body._id },
             { $push: { hostedTrips: trip._id } }
@@ -241,8 +242,25 @@ router.post('/trip', auth, async (req, res) => {
 });
 
 /**
+ *  Get Trip By User
+ *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/get-trips-by-user
+ */
+router.get('/trips', auth, async (req, res) => {
+
+    // TODO: Get Host User Object
+
+    try {
+        const trips = await Trip.findByUser(req.user._id);
+        res.status(200).send(trips);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
+});
+
+/**
  *  Get Trip By Id
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/get-trip-by-id
  */
 router.get('/trip/:tripId', auth, async (req, res) => {
 
@@ -264,25 +282,8 @@ router.get('/trip/:tripId', auth, async (req, res) => {
 });
 
 /**
- *  Get Trip By User Id
- *  [ docs link ]
- */
-router.get('/trips', auth, async (req, res) => {
-
-    // TODO: Get Host User Object
-
-    try {
-        const trips = await Trip.findByUser(req.user._id);
-        res.status(200).send(trips);
-    } catch (error) {
-        console.log(error);
-        res.status(500).send(error);
-    }
-});
-
-/**
  *  Update Trip By Id
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/patch-trip-by-id
  */
 router.patch('/trip/:tripId', auth, async (req, res) => {
 
@@ -309,7 +310,7 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
         const trip = await Trip.findById({ _id: req.params.tripId });
 
         if (!trip) {
-            res.status(404).send({ Error: 'Invalid trip id' });
+            res.status(400).send({ Error: 'Invalid trip id' });
             return;
         }
 
@@ -330,7 +331,7 @@ router.patch('/trip/:tripId', auth, async (req, res) => {
 
 /**
  *  Delete Trip By Id
- *  [ docs link ]
+ *  https://will-german.github.io/excursions-api-docs/#tag/Trips/operation/delete-trip-by-id
  */
 router.delete('/trip/:tripId', auth, async (req, res) => {
 
@@ -370,9 +371,84 @@ router.delete('/trip/:tripId', auth, async (req, res) => {
 // #endregion              //
 // ----------------------- //
 
+
 // -------------------------- //
 // #region Sharing Excursions //
 // -------------------------- //
+
+/**
+ *  Excursion Invite Object
+ *  _id
+ *  sender (user)
+ *  receiver (user)
+ *  isAccepted
+ *  excursionId
+ */
+
+/**
+ *  Create Excursion Share Invite
+ * 
+ */
+router.post('/excursion/share', auth, async (req, res) => {
+    try {
+        // ...
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
+
+/**
+ *  Get Excursion Invites By User
+ * 
+ */
+router.get('/excursion/share', auth, async (req, res) => {
+    try {
+        // ...
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
+
+/**
+ *  Remove User By Excursion Id
+ * 
+ */
+router.delete('/excursion/share/:excursionId', auth, async (req, res) => {
+    try {
+        // ...
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
+
+/**
+ *  Handle Excursion Invite
+ * 
+ */
+router.patch('/excursion/share/:excursionId', auth, async (req, res) => {
+    try {
+        // ...
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
+
+/**
+ *  Delete Excursion Invite
+ * 
+ */
+router.delete('/excursion/share/:excursionId', auth, async (req, res) => {
+    try {
+        // ...
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ Error: 'Bad Request' });
+    }
+});
 
 // -------------------------- //
 // #endregion                 //

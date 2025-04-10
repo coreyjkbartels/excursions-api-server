@@ -85,15 +85,25 @@ router.delete('/user', auth, async (req, res) => {
  *  []
  */
 router.get('/users', auth, async (req, res) => {
-    // limit, start, q (formerly keywords)
+    let filter = {}
 
-    // read in query params from the req
+    if (req.query.q) {
+        filter = {
+            $or: [
+                { userName: { $regex: req.query.q, $options: 'i' } },
+                { firstName: { $regex: req.query.q, $options: 'i' } },
+                { lastName: { $regex: req.query.q, $options: 'i' } }
+            ]
+        }
+    }
 
-    // fetch the objects from {start} to {start+limit} that contain the {keywords} in any of the "public" properties (i.e., NOT PASSWORD)
+    const users = await User.find(filter,
+        { userName: 1, firstName: 1, lastName: 1, _id: 1 }
+    )
+        .skip(parseInt(req.query.start))
+        .limit(parseInt(req.query.limit))
 
-    // for each object returned append it to an array
-
-    // return the array of objects to the client
+    res.status(200).send(users)
 });
 
 /**
@@ -103,14 +113,17 @@ router.get('/users', auth, async (req, res) => {
 router.get('/user/:userId', auth, async (req, res) => {
     try {
         const userId = req.params.userId;
-        const user = await User.findById({ _id: userId });
+        const user = await User.findById({ _id: userId }, {
+            userName: 1,
+            firstName: 1,
+            lastName: 1,
+            _id: 1
+        });
 
         if (!user) {
             res.status(404);
             throw new Error("Not Found");
         }
-
-        // TODO: Remove sensitive data properties.
 
         res.status(200).send(user);
     } catch (error) {
