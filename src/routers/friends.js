@@ -12,7 +12,7 @@ const router = new express.Router();
 
 /**
  *  Create Friend Request
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Friend-Requests/operation/create-friend-request
  */
 router.post('/friends/requests', auth, async (req, res) => {
     try {
@@ -54,7 +54,7 @@ router.post('/friends/requests', auth, async (req, res) => {
             friendRequest.receiver = receiver;
         }
 
-        res.status(201).send(friendRequest);
+        res.status(201).send({ friendRequest });
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -63,7 +63,7 @@ router.post('/friends/requests', auth, async (req, res) => {
 
 /**
  *  Get Friend Requests By User
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Friend-Requests/operation/get-friend-requests
  */
 router.get('/friends/requests', auth, async (req, res) => {
     try {
@@ -114,7 +114,7 @@ router.get('/friends/requests', auth, async (req, res) => {
 
         const friendRequests = await pipeline.exec();
 
-        res.status(200).send(friendRequests);
+        res.status(200).send({ friendRequests });
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -123,7 +123,7 @@ router.get('/friends/requests', auth, async (req, res) => {
 
 /**
  *  Handle Friend Request
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Friend-Requests/operation/handle-friend-request
  */
 router.patch('/friends/requests/:requestId', auth, async (req, res) => {
     const mods = req.body;
@@ -196,7 +196,7 @@ router.patch('/friends/requests/:requestId', auth, async (req, res) => {
             friendRequest.receiver = receiver;
         }
 
-        res.status(200).send(friendRequest);
+        res.status(200).send({ friendRequest });
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -205,7 +205,7 @@ router.patch('/friends/requests/:requestId', auth, async (req, res) => {
 
 /**
  *  Delete Friend Request
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Friend-Requests/operation/delete-friend-request
  */
 router.delete('/friends/requests/:requestId', auth, async (req, res) => {
     try {
@@ -250,7 +250,7 @@ router.delete('/friends/requests/:requestId', auth, async (req, res) => {
 
 /**
  *  Get Friends By User
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Friends/operation/get-friends
  */
 router.get('/friends', auth, async (req, res) => {
     try {
@@ -265,7 +265,7 @@ router.get('/friends', auth, async (req, res) => {
             }
         );
 
-        res.status(200).send(friends);
+        res.status(200).send({ friends });
     } catch (error) {
         console.log(error);
         res.status(400).send({ Error: 'Bad Request' });
@@ -274,7 +274,7 @@ router.get('/friends', auth, async (req, res) => {
 
 /**
  *  Delete Friend
- * 
+ *  https://will-german.github.io/excursions-api-docs/#tag/Friends/operation/remove-friend
  */
 router.delete('/friends/:friendId', auth, async (req, res) => {
     try {
