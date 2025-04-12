@@ -194,8 +194,9 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
             return;
         }
 
-        if (excursion.host !== req.user._id && !excursion.participants.includes(req.user._id)) {
+        if (!excursion.host.equals(req.user._id) && !excursion.participants.includes(req.user._id)) {
             res.status(403).send({ Error: "Forbidden" });
+            return;
         }
 
         const host = await User.findById(
@@ -822,10 +823,10 @@ router.patch('/share/excursions/:inviteId', auth, async (req, res) => {
             return;
         }
 
-        // if (excursionInvite.receiver !== req.user._id) {
-        //     res.status(403).send({ Error: "Forbidden" });
-        //     return;
-        // }
+        if (!excursionInvite.receiver.equals(req.user._id)) {
+            res.status(403).send({ Error: "Forbidden" });
+            return;
+        }
 
         props.forEach((prop) => excursionInvite[prop] = mods[prop]);
         await excursionInvite.save();
@@ -874,7 +875,7 @@ router.delete('/share/excursions/:inviteId', auth, async (req, res) => {
             return;
         }
 
-        if (excursionInvite.sender !== req.user._id) {
+        if (!excursionInvite.sender.equals(req.user._id)) {
             res.status(403).send({ Error: 'Forbidden' });
             return;
         }
@@ -919,7 +920,7 @@ router.delete('/remove/excursions/:excursionId', auth, async (req, res) => {
             return;
         }
 
-        if (excursion.host !== req.user._id) {
+        if (!excursion.host.equals(req.user._id)) {
             res.status(403).send({ Error: "Forbidden" });
             return;
         }
