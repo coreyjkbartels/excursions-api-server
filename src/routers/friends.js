@@ -31,15 +31,15 @@ router.post('/friends/requests', auth, async (req, res) => {
         const friendRequest = new FriendRequest(data);
         await friendRequest.save();
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: friendRequest.sender },
             { $push: { outgoingFriendRequests: friendRequest._id } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: friendRequest.receiver },
             { $push: { incomingFriendRequests: friendRequest._id } }
-        ));
+        );
 
         const sender = await User.findPublicUser(friendRequest.sender
         );
@@ -151,35 +151,35 @@ router.patch('/friends/requests/:requestId', auth, async (req, res) => {
             return;
         }
 
-        if (friendRequest.receiver !== req.user._id) {
-            res.status(403).send({ Error: "Forbidden" });
-            return;
-        }
+        // if (friendRequest.receiver !== req.user._id) {
+        //     res.status(403).send({ Error: "Forbidden" });
+        //     return;
+        // }
 
         props.forEach((prop) => friendRequest[prop] = mods[prop]);
         await friendRequest.save();
 
         if (req.body.isAccepted) {
-            await User.updateOne((
+            await User.updateOne(
                 { _id: friendRequest.sender },
                 { $push: { friends: friendRequest.receiver } }
-            ));
+            );
 
-            await User.updateOne((
+            await User.updateOne(
                 { _id: friendRequest.receiver },
                 { $push: { friends: friendRequest.sender } }
-            ));
+            );
         }
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: friendRequest.sender },
             { $pull: { outgoingFriendRequests: friendRequest._id } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: friendRequest.receiver },
             { $pull: { incomingFriendRequests: friendRequest._id } }
-        ));
+        );
 
         await FriendRequest.deleteOne({ _id: friendRequest._id });
 
@@ -216,20 +216,20 @@ router.delete('/friends/requests/:requestId', auth, async (req, res) => {
             return;
         }
 
-        if (friendRequest.sender !== req.user._id) {
-            res.status(403).send({ Error: 'Forbidden' });
-            return;
-        }
+        // if (friendRequest.sender !== req.user._id) {
+        //     res.status(403).send({ Error: 'Forbidden' });
+        //     return;
+        // }
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.user._id },
             { $pull: { outgoingFriendRequests: req.params.requestId } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: friendRequest.receiver },
             { $pull: { incomingFriendRequests: req.params.requestId } }
-        ));
+        );
 
         await FriendRequest.deleteOne({ _id: req.params.requestId });
 
@@ -288,15 +288,15 @@ router.delete('/friends/:friendId', auth, async (req, res) => {
             return;
         }
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.user._id },
             { $pull: { friends: req.params.friendId } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.params.friendId },
             { $pull: { friends: req.params.friendId } }
-        ));
+        );
 
         const friend = await User.getPublicProfile(req.params.friendId);
 
