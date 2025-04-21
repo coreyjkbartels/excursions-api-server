@@ -288,7 +288,7 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
     }
 
     const props = Object.keys(mods);
-    const modifiable = ['name', 'description', 'participants', 'trips', 'isComplete'];
+    const modifiable = ['name', 'description', 'trips', 'isComplete'];
 
     const isValid = props.every((prop) => modifiable.includes(prop));
 
@@ -312,6 +312,8 @@ router.patch('/excursion/:excursionId', auth, async (req, res) => {
 
         props.forEach((prop) => excursion[prop] = mods[prop]);
         await excursion.save();
+
+        // this should probably be a pipeline as well
 
         const host = await User.findById(
             { _id: excursion.host },
