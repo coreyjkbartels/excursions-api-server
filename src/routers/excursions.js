@@ -381,10 +381,8 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
             { $pull: { hostedExcursions: req.params.excursionId } }
         );
 
-        const filter = { _id: { $in: [...excursion.participants] } };
-
         await User.updateMany(
-            { $match: filter },
+            { _id: { $in: [...excursion.participants] } },
             { $pull: { sharedExcursions: req.params.excursionId } }
         );
 
