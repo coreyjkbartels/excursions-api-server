@@ -12,9 +12,18 @@ const app = express();
 app.use(express.json());
 
 app.use(cors());
+
+// app.use(function (req, res, next) {
+//     res.header("Access-Control-Allow-Origin", "*");
+//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//     next();
+// });
+
+// pulled from KChase in attempt to fix Jana's CORS issue T-T
+// idk wtf is going on — wish me luck
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Methods");
     next();
 });
 
