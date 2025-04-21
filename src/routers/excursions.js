@@ -24,6 +24,11 @@ router.post('/excursion', auth, async (req, res) => {
         let excursion = new Excursion(req.body);
         await excursion.save();
 
+        await User.updateOne((
+            { _id: req.user._id },
+            { hostedExcursions: excursion._id }
+        ));
+
         const filter = { _id: excursion._id };
 
         const pipeline = Excursion.aggregate([
@@ -622,7 +627,7 @@ router.post('/share/excursion/:excursionId', auth, async (req, res) => {
         const data = {
             "sender": req.user._id,
             "receiver": req.body.friendId,
-            "excursion": req.params.excursionId
+            "excursion": excursion._id,
         };
 
         let excursionInvite = new ExcursionInvite(data);
@@ -630,12 +635,12 @@ router.post('/share/excursion/:excursionId', auth, async (req, res) => {
 
         await User.updateOne((
             { _id: req.user._id },
-            { outgoingExcursionInvites: excursionInvite._id }
+            { $push: { outgoingExcursionInvites: excursionInvite._id } }
         ));
 
         await User.updateOne((
             { _id: req.body.friendId },
-            { incomingExcursionInvites: excursionInvite._id }
+            { $push: { incomingExcursionInvites: excursionInvite._id } }
         ));
 
         let filter = { _id: excursionInvite._id };
@@ -823,14 +828,15 @@ router.patch('/share/excursions/:inviteId', auth, async (req, res) => {
             return;
         }
 
-        if (!excursionInvite.receiver.equals(req.user._id)) {
-            res.status(403).send({ Error: "Forbidden" });
-            return;
-        }
+        // if (!excursionInvite.receiver.equals(req.user._id)) {
+        //     res.status(403).send({ Error: "Forbidden" });
+        //     return;
+        // }
 
         props.forEach((prop) => excursionInvite[prop] = mods[prop]);
         await excursionInvite.save();
 
+        // check a couple variations of true to see if it works
         if (req.body.isAccepted) {
             await Excursion.updateOne((
                 { _id: excursionInvite.excursion },
@@ -959,7 +965,7 @@ router.delete('/leave/excursions/:excursionId', auth, async (req, res) => {
             return;
         }
 
-        if (excursion.host === req.user._id) {
+        if (excursion.host.equals(req.user._id)) {
             res.status(403).send({ Error: "Forbidden" });
             return;
         }
