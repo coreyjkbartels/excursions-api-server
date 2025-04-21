@@ -24,10 +24,10 @@ router.post('/excursion', auth, async (req, res) => {
         let excursion = new Excursion(req.body);
         await excursion.save();
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.user._id },
             { hostedExcursions: excursion._id }
-        ));
+        );
 
         const filter = { _id: excursion._id };
 
@@ -192,7 +192,7 @@ router.get('/excursions', auth, async (req, res) => {
  */
 router.get('/excursion/:excursionId', auth, async (req, res) => {
     try {
-        const excursion = await Excursion.findById(req.params.excursionId);
+        let excursion = await Excursion.findById(req.params.excursionId);
 
         if (!excursion) {
             res.status(400).send({ Error: "Invalid excursion id" });
@@ -204,46 +204,69 @@ router.get('/excursion/:excursionId', auth, async (req, res) => {
             return;
         }
 
-        const host = await User.findById(
-            { _id: excursion.host },
+        const filter = { _id: excursion._id };
+
+        const pipeline = Excursion.aggregate([
+            { $match: filter },
             {
-                _id: 1,
-                userName: 1,
-                firstName: 1,
-                lastName: 1,
-                email: 1,
+                $lookup: {
+                    from: "trips",
+                    foreignField: '_id',
+                    localField: "trips",
+                    as: "trips"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "host",
+                    as: "host",
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    foreignField: "_id",
+                    localField: "participants",
+                    as: "participants",
+                }
+            },
+            {
+                $project: {
+                    "name": 1,
+                    "description": 1,
+                    "isComplete": 1,
+                    "createdAt": 1,
+                    "updatedAt": 1,
+
+                    "trips._id": 1,
+                    "trips.name": 1,
+                    "trips.description": 1,
+                    "trips.park": 1,
+                    "trips.campground": 1,
+                    "trips.thingstodo": 1,
+                    "trips.startDate": 1,
+                    "trips.endDate": 1,
+                    "trips.createdAt": 1,
+                    "trips.updatedAt": 1,
+
+                    "host._id": 1,
+                    "host.userName": 1,
+                    "host.firstName": 1,
+                    "host.lastName": 1,
+                    "host.email": 1,
+
+                    "participants._id": 1,
+                    "participants.userName": 1,
+                    "participants.firstName": 1,
+                    "participants.lastName": 1,
+                    "participants.email": 1,
+                }
             }
-        );
+        ]);
 
-        if (host) {
-            excursion.host = host;
-        }
-
-        if (excursion.trips) {
-            const trips = [];
-
-            for (let id of excursion.trips) {
-                const trip = await Trip.findById(
-                    { _id: id },
-                    {
-                        _id: 1,
-                        name: 1,
-                        description: 1,
-                        park: 1,
-                        campground: 1,
-                        thingstodo: 1,
-                        startDate: 1,
-                        endDate: 1,
-                        createdAt: 1,
-                        updatedAt: 1,
-                    }
-                );
-
-                trips.push(trip);
-            }
-
-            excursion.trips = trips;
-        }
+        excursion = await pipeline.exec();
 
         res.status(200).send({ excursion });
     } catch (error) {
@@ -351,17 +374,17 @@ router.delete('/excursion/:excursionId', auth, async (req, res) => {
 
         const excursion = await Excursion.findById({ _id: req.params.excursionId });
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.user._id },
             { $pull: { hostedExcursions: req.params.excursionId } }
-        ));
+        );
 
         const filter = { _id: { $in: [...excursion.participants] } };
 
-        await User.updateMany((
+        await User.updateMany(
             { $match: filter },
             { $pull: { sharedExcursions: req.params.excursionId } }
-        ));
+        );
 
         await Excursion.deleteOne({ _id: req.params.excursionId });
 
@@ -409,10 +432,10 @@ router.post('/trip', auth, async (req, res) => {
             trip.host = host;
         }
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.user._id },
             { $push: { hostedTrips: trip._id } }
-        ));
+        );
 
         res.status(201).send({ trip });
     } catch (error) {
@@ -579,15 +602,15 @@ router.delete('/trip/:tripId', auth, async (req, res) => {
             return;
         }
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.user._id },
             { $pull: { hostedTrips: req.params.tripId } }
-        ));
+        );
 
-        await Excursion.updateMany((
+        await Excursion.updateMany(
             { host: req.user._id },
             { $pull: { trips: req.params.tripId } }
-        ));
+        );
 
         await Trip.deleteOne({ _id: req.params.tripId });
 
@@ -633,15 +656,15 @@ router.post('/share/excursion/:excursionId', auth, async (req, res) => {
         let excursionInvite = new ExcursionInvite(data);
         await excursionInvite.save();
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.user._id },
             { $push: { outgoingExcursionInvites: excursionInvite._id } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.body.friendId },
             { $push: { incomingExcursionInvites: excursionInvite._id } }
-        ));
+        );
 
         let filter = { _id: excursionInvite._id };
 
@@ -828,36 +851,36 @@ router.patch('/share/excursions/:inviteId', auth, async (req, res) => {
             return;
         }
 
-        // if (!excursionInvite.receiver.equals(req.user._id)) {
-        //     res.status(403).send({ Error: "Forbidden" });
-        //     return;
-        // }
+        if (!excursionInvite.receiver.equals(req.user._id)) {
+            res.status(403).send({ Error: "Forbidden" });
+            return;
+        }
 
         props.forEach((prop) => excursionInvite[prop] = mods[prop]);
         await excursionInvite.save();
 
-        // check a couple variations of true to see if it works
         if (req.body.isAccepted) {
-            await Excursion.updateOne((
+
+            await Excursion.updateOne(
                 { _id: excursionInvite.excursion },
                 { $push: { participants: req.user._id } }
-            ));
+            );
 
-            await User.updateOne((
+            await User.updateOne(
                 { _id: req.user._id },
                 { $push: { sharedExcursions: excursionInvite.excursion } }
-            ));
+            );
         }
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: excursionInvite.sender },
             { $pull: { outgoingExcursionInvites: excursionInvite._id } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: excursionInvite.receiver },
             { $pull: { incomingExcursionInvites: excursionInvite._id } }
-        ));
+        );
 
         await ExcursionInvite.deleteOne({ _id: excursionInvite._id });
 
@@ -886,15 +909,15 @@ router.delete('/share/excursions/:inviteId', auth, async (req, res) => {
             return;
         }
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: excursionInvite.sender },
             { $pull: { outgoingExcursionInvites: req.params.inviteId } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: excursionInvite.receiver },
             { $pull: { incomingExcursionInvites: req.params.inviteId } }
-        ));
+        );
 
         await excursionInvite.deleteOne({ _id: req.params.inviteId });
 
@@ -935,15 +958,15 @@ router.delete('/remove/excursions/:excursionId', auth, async (req, res) => {
             res.status(400).send({ Error: "Missing participant id" });
         }
 
-        await Excursion.updateOne((
+        await Excursion.updateOne(
             { _id: req.params.excursionId },
             { $pull: { participants: req.body.participantId } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.body.participantId },
             { $pull: { sharedExcursions: req.params.excursionId } }
-        ));
+        );
 
         res.status(200).send();
     } catch (error) {
@@ -970,15 +993,15 @@ router.delete('/leave/excursions/:excursionId', auth, async (req, res) => {
             return;
         }
 
-        await Excursion.updateOne((
+        await Excursion.updateOne(
             { _id: req.params.excursionId },
             { $pull: { participants: req.user._id } }
-        ));
+        );
 
-        await User.updateOne((
+        await User.updateOne(
             { _id: req.user._id },
             { $pull: { sharedExcursions: req.params.excursionId } }
-        ));
+        );
 
         res.status(200).send();
     } catch (error) {
